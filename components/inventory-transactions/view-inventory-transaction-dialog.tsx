@@ -16,6 +16,7 @@ interface InventoryTransaction {
   itemId: number
   color: string
   openingBalance: number
+  
   receivedQty: number
   issueQty: number
   closingBalance: number
