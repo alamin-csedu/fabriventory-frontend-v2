@@ -29,8 +29,15 @@ export default function LoginPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000))
 
       if (email === "admin@sinhaknit.com" && password === "admin123") {
-        localStorage.setItem("fabriventory_auth", "true")
+        // Set authentication token
+        localStorage.setItem("fabrimentory_auth", "true")
+        
+        // Force a small delay to ensure localStorage is set
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        
+        // Navigate to dashboard
         router.push("/dashboard")
+        router.refresh() // Force refresh to ensure auth state is updated
       } else {
         setError("Invalid email or password")
       }
@@ -42,11 +49,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Company Info */}
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg mb-4">
+          <div className="mx-auto w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg mb-4">
             <Package className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Sinha Knit Industries Ltd.</h1>
@@ -54,11 +61,8 @@ export default function LoginPage() {
         </div>
 
         <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-          <CardHeader className="text-center space-y-2 pb-6">
-            <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">Welcome Back</CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              Sign in to access your dashboard
-            </CardDescription>
+          <CardHeader className="text-center space-y-2 pb-2">
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">Login</CardTitle>
           </CardHeader>
           <CardContent className="px-6 pb-6">
             <form onSubmit={handleLogin} className="space-y-6">
@@ -107,7 +111,7 @@ export default function LoginPage() {
 
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200" 
+                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all duration-200" 
                 disabled={isLoading}
               >
                 {isLoading ? (

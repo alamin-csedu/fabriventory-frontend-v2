@@ -57,15 +57,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
-    <div className="flex h-full flex-col bg-primary">
+    <div className="flex h-full flex-col bg-sidebar">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 px-6 border-b border-primary-foreground/20">
-        <div className="w-8 h-8 bg-primary-foreground/20 rounded-lg flex items-center justify-center">
-          <Package className="w-4 h-4 text-primary-foreground" />
+      <div className="flex h-16 items-center gap-2 px-6 border-b border-sidebar-border">
+        <div className="w-8 h-8 bg-sidebar-primary/20 rounded-lg flex items-center justify-center">
+          <Package className="w-4 h-4 text-sidebar-primary" />
         </div>
         <div>
-          <h1 className="font-bold text-lg text-primary-foreground">Fabrimentory</h1>
-          <p className="text-xs text-primary-foreground/70">Inventory System</p>
+          <h1 className="font-bold text-sm text-sidebar-foreground">FABRIMENTORY</h1>
+          <p className="text-[8px] text-sidebar-foreground/70">Enforced Efficiency</p>
         </div>
       </div>
 
@@ -78,8 +78,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               key={item.name}
               variant="ghost"
               className={cn(
-                "w-full justify-start gap-3 text-primary-foreground hover:bg-primary-foreground/10",
-                isActive && "bg-primary-foreground/20 text-primary-foreground"
+                "w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent",
+                isActive && "bg-sidebar-primary text-sidebar-primary-foreground"
               )}
               onClick={() => {
                 if (mobile) setSidebarOpen(false)
@@ -99,20 +99,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </nav>
 
       {/* User section */}
-      <div className="border-t border-primary-foreground/20 p-4">
+      <div className="border-t border-sidebar-border p-4">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-            <span className="text-sm font-medium text-primary-foreground">A</span>
+          <div className="w-8 h-8 bg-sidebar-primary/20 rounded-full flex items-center justify-center">
+            <span className="text-sm font-medium text-sidebar-primary">A</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate text-primary-foreground">Admin User</p>
-            <p className="text-xs text-primary-foreground/70 truncate">admin@fabrimentory.com</p>
+            <p className="text-sm font-medium truncate text-sidebar-foreground">Admin User</p>
+            <p className="text-xs text-sidebar-foreground/70 truncate">admin@fabrimentory.com</p>
           </div>
         </div>
         <Button
           variant="outline"
           size="sm"
-          className="w-full justify-start gap-2 bg-transparent border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
+          className="w-full justify-start gap-2 bg-transparent border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent"
           onClick={handleLogout}
         >
           <LogOut className="h-4 w-4" />
