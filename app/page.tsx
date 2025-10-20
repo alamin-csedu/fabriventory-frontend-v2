@@ -2,18 +2,21 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function HomePage() {
   const router = useRouter()
+  const { isAuthenticated, isLoading } = useAuth()
 
   useEffect(() => {
-    const auth = localStorage.getItem("fabrimentory_auth")
-    if (auth === "true") {
-      router.push("/dashboard")
-    } else {
-      router.push("/login")
+    if (!isLoading) {
+      if (isAuthenticated) {
+        router.push("/dashboard")
+      } else {
+        router.push("/login")
+      }
     }
-  }, [router])
+  }, [isAuthenticated, isLoading, router])
 
   return (
     <div className="min-h-screen flex items-center justify-center">

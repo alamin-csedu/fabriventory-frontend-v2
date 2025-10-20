@@ -2,31 +2,23 @@
 
 import type React from "react"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 interface AuthGuardProps {
   children: React.ReactNode
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    const checkAuth = () => {
-      const auth = localStorage.getItem("fabrimentory_auth")
-      if (auth === "true") {
-        setIsAuthenticated(true)
-      } else {
-        router.push("/login")
-      }
-      setIsLoading(false)
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login")
     }
-
-    checkAuth()
-  }, [router])
+  }, [isAuthenticated, isLoading, router])
 
   if (isLoading) {
     return (

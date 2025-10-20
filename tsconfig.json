@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/providers.jsx", "components/vendors/add-vendor-dialog.jsx", "components/vendors/delete-vendor-dialog.jsx", "components/vendors/edit-vendor-dialog.jsx", "components/vendors/vendors-page-skeleton.jsx", "components/vendors/view-vendor-dialog.jsx", "components/vendors/vendors-table.jsx", "app/(dashboard)/settings/vendors/page.jsx", "components/dashboard-layout.jsx", "components/auth/permission-guard.jsx", "components/auth/role-guard.jsx", "contexts/auth-context.jsx", "lib/api/auth.js", "app/login/page.jsx", "app/dashboard/admin/page.jsx"],
   "exclude": ["node_modules"]
 }
