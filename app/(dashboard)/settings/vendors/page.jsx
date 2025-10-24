@@ -40,7 +40,7 @@ export default function VendorsPage() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [perPage, setPerPage] = useState(2)
+  const [perPage, setPerPage] = useState(10)
   const [totalVendors, setTotalVendors] = useState(0)
   const [sorting, setSorting] = useState({
     sortBy: 'created_at',

@@ -1,10 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Trash2, Eye, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, Eye, ArrowUpDown, ArrowUp, ArrowDown, GitBranch, ChevronDown, ChevronRight, Loader2, ChevronRight as ChevronRightIcon } from "lucide-react"
+import { apiService } from "@/lib/api"
+import { toast } from "sonner"
 
 export const StorageTable = ({ 
   storages,
@@ -14,6 +17,9 @@ export const StorageTable = ({
   sorting,
   onSortingChange
 }) => {
+  const [expandedHierarchies, setExpandedHierarchies] = useState(new Set())
+  const [hierarchyData, setHierarchyData] = useState({})
+  const [loadingHierarchies, setLoadingHierarchies] = useState(new Set())
   const handleSort = (column) => {
     const newSortOrder = sorting.sortBy === column && sorting.sortOrder === 'ASC' ? 'DESC' : 'ASC'
     onSortingChange(column, newSortOrder)
@@ -38,6 +44,44 @@ export const StorageTable = ({
     return capacity ? capacity.toFixed(2) : "N/A"
   }
 
+  const fetchHierarchy = async (storageId) => {
+    try {
+      setLoadingHierarchies(prev => new Set([...prev, storageId]))
+      const response = await apiService.getStorageHierarchy(storageId)
+      if (response.data) {
+        setHierarchyData(prev => ({
+          ...prev,
+          [storageId]: response.data
+        }))
+      }
+    } catch (error) {
+      console.error('Error fetching hierarchy:', error)
+      toast.error('Failed to fetch storage hierarchy')
+    } finally {
+      setLoadingHierarchies(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(storageId)
+        return newSet
+      })
+    }
+  }
+
+  const toggleHierarchy = (storageId) => {
+    const isExpanded = expandedHierarchies.has(storageId)
+    if (isExpanded) {
+      setExpandedHierarchies(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(storageId)
+        return newSet
+      })
+    } else {
+      setExpandedHierarchies(prev => new Set([...prev, storageId]))
+      if (!hierarchyData[storageId]) {
+        fetchHierarchy(storageId)
+      }
+    }
+  }
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -52,7 +96,15 @@ export const StorageTable = ({
                 {getSortIcon('name')}
               </div>
             </TableHead>
-            <TableHead>Parent</TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-muted/50"
+              onClick={() => handleSort('parent_id')}
+            >
+              <div className="flex items-center gap-2">
+                Parent
+                {getSortIcon('parent_id')}
+              </div>
+            </TableHead>
             <TableHead 
               className="cursor-pointer hover:bg-muted/50"
               onClick={() => handleSort('capacity')}
@@ -83,41 +135,108 @@ export const StorageTable = ({
             </TableRow>
           ) : (
             storages.map((storage) => (
-              <TableRow key={storage.id}>
-                <TableCell className="font-medium">{storage.name}</TableCell>
-                <TableCell>
-                  {storage.parent_id ? (
-                    <Badge variant="secondary">Sub-location</Badge>
-                  ) : (
-                    <Badge variant="outline">Main Location</Badge>
-                  )}
-                </TableCell>
-                <TableCell>{formatCapacity(storage.capacity)}</TableCell>
-                <TableCell>{formatDate(storage.created_at)}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
+              <>
+                <TableRow key={storage.id}>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span>{storage.name}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 hover:bg-blue-100"
+                        onClick={() => toggleHierarchy(storage.id)}
+                        title={expandedHierarchies.has(storage.id) ? 'Hide Hierarchy' : 'Show Hierarchy'}
+                      >
+                        <GitBranch className="h-3 w-3 text-blue-600" />
                       </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onView(storage)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        View Details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(storage)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onDelete(storage)} className="text-destructive">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {storage.parent ? (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                          <span className="text-sm font-medium text-gray-900">{storage.parent.name}</span>
+                        </div>
+                        <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                          Parent
+                        </Badge>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                          <span className="text-sm font-medium text-gray-900">Root Location</span>
+                        </div>
+                        <Badge variant="outline" className="text-xs px-2 py-0.5">
+                          Main
+                        </Badge>
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>{formatCapacity(storage.capacity)}</TableCell>
+                  <TableCell>{formatDate(storage.created_at)}</TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onView(storage)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onEdit(storage)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDelete(storage)} className="text-destructive">
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+                
+                {/* Hierarchy Display Row */}
+                {expandedHierarchies.has(storage.id) && (
+                  <TableRow key={`${storage.id}-hierarchy`} className="bg-blue-50/30">
+                    <TableCell colSpan={5} className="p-0">
+                      <div className="p-3 border-l-4 border-blue-500 bg-blue-50/50">
+                        <div className="flex items-center gap-2 mb-2">
+                          <GitBranch className="h-4 w-4 text-blue-600" />
+                          <span className="font-medium text-blue-800 text-sm">Storage Hierarchy</span>
+                          {loadingHierarchies.has(storage.id) && (
+                            <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                          )}
+                        </div>
+                        
+                        {hierarchyData[storage.id] && (
+                          <div className="flex items-center gap-1 text-sm">
+                            {hierarchyData[storage.id].map((item, index) => {
+                              const isLast = index === hierarchyData[storage.id].length - 1
+                              
+                              return (
+                                <div key={item.id} className="flex items-center gap-1">
+                                  <span className="px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border">
+                                    {item.name} ({formatCapacity(item.capacity)})
+                                  </span>
+                                  {!isLast && (
+                                    <ChevronRightIcon className="h-3 w-3 text-gray-400" />
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </>
             ))
           )}
         </TableBody>

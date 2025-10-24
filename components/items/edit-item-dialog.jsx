@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Combobox } from "@/components/ui/combobox"
+import { ColorCombobox } from "@/components/ui/color-combobox"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -22,6 +24,16 @@ export function EditItemDialog({ item, open, onOpenChange, onSubmit }) {
     color_id: ""
   })
   const [loading, setLoading] = useState(false)
+  const [categories, setCategories] = useState([])
+  const [colors, setColors] = useState([])
+  const [loadingData, setLoadingData] = useState(false)
+
+  // Fetch categories and colors when dialog opens
+  useEffect(() => {
+    if (open) {
+      fetchCategoriesAndColors()
+    }
+  }, [open])
 
   useEffect(() => {
     if (item && open) {
@@ -33,11 +45,29 @@ export function EditItemDialog({ item, open, onOpenChange, onSubmit }) {
     }
   }, [item, open])
 
+  const fetchCategoriesAndColors = async () => {
+    setLoadingData(true)
+    try {
+      const [categoriesResponse, colorsResponse] = await Promise.all([
+        apiService.getCategories(),
+        apiService.getColors()
+      ])
+      
+      setCategories(categoriesResponse.data?.data || [])
+      setColors(colorsResponse.data?.data || [])
+    } catch (error) {
+      console.error('Error fetching categories and colors:', error)
+      toast.error('Failed to load categories and colors')
+    } finally {
+      setLoadingData(false)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.name.trim() || !formData.category_id.trim() || !formData.color_id.trim()) {
-      toast.error("Item name, category ID, and color ID are required")
+    if (!formData.name.trim() || !formData.category_id.trim()) {
+      toast.error("Item name and category are required")
       return
     }
 
@@ -47,7 +77,7 @@ export function EditItemDialog({ item, open, onOpenChange, onSubmit }) {
       const itemData = {
         name: formData.name.trim(),
         category_id: parseInt(formData.category_id),
-        color_id: parseInt(formData.color_id)
+        ...(formData.color_id && { color_id: parseInt(formData.color_id) })
       }
 
       await onSubmit(item.id, itemData)
@@ -83,26 +113,35 @@ export function EditItemDialog({ item, open, onOpenChange, onSubmit }) {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="category_id">Category ID *</Label>
-              <Input
-                id="category_id"
-                type="number"
-                placeholder="Enter category ID"
+              <Label htmlFor="category_id">Category *</Label>
+              <Combobox
+                options={categories.map(category => ({
+                  value: category.id.toString(),
+                  label: category.name
+                }))}
                 value={formData.category_id}
-                onChange={(e) => setFormData(prev => ({ ...prev, category_id: e.target.value }))}
-                required
+                onValueChange={(value) => setFormData(prev => ({ ...prev, category_id: value }))}
+                placeholder="Select category..."
+                searchPlaceholder="Search categories..."
+                emptyText="No categories found."
+                disabled={loadingData}
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="color_id">Color ID *</Label>
-              <Input
-                id="color_id"
-                type="number"
-                placeholder="Enter color ID"
+              <Label htmlFor="color_id">Color</Label>
+              <ColorCombobox
+                options={colors.map(color => ({
+                  value: color.id.toString(),
+                  label: color.name,
+                  colorCode: color.color_code
+                }))}
                 value={formData.color_id}
-                onChange={(e) => setFormData(prev => ({ ...prev, color_id: e.target.value }))}
-                required
+                onValueChange={(value) => setFormData(prev => ({ ...prev, color_id: value }))}
+                placeholder="Select color..."
+                searchPlaceholder="Search colors..."
+                emptyText="No colors found."
+                disabled={loadingData}
               />
             </div>
           </div>
@@ -110,7 +149,7 @@ export function EditItemDialog({ item, open, onOpenChange, onSubmit }) {
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !formData.name.trim() || !formData.category_id.trim() || !formData.color_id.trim()}>
+            <Button type="submit" disabled={loading || loadingData || !formData.name.trim() || !formData.category_id.trim()}>
               {loading ? "Updating..." : "Update Item"}
             </Button>
           </DialogFooter>

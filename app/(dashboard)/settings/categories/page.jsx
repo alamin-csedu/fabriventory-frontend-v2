@@ -1,11 +1,10 @@
 "use client"
 
-import { ItemsTable } from "@/components/items/items-table"
-import { AddItemDialog } from "@/components/items/add-item-dialog"
-import { EditItemDialog } from "@/components/items/edit-item-dialog"
-import { DeleteItemDialog } from "@/components/items/delete-item-dialog"
-import { ViewItemDialog } from "@/components/items/view-item-dialog"
-import { ItemsPageSkeleton, ItemsTableSkeleton, StatsCardsSkeleton } from "@/components/items/items-page-skeleton"
+import { CategoriesTable } from "@/components/categories/categories-table"
+import { AddCategoryDialog } from "@/components/categories/add-category-dialog"
+import { EditCategoryDialog } from "@/components/categories/edit-category-dialog"
+import { DeleteCategoryDialog } from "@/components/categories/delete-category-dialog"
+import { ViewCategoryDialog } from "@/components/categories/view-category-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,23 +16,23 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, Package, TrendingUp, Tag } from "lucide-react"
+import { Plus, Search, Tag, TrendingUp, Package } from "lucide-react"
 import { useState, useEffect } from "react"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
-export default function ItemsPage() {
+export default function CategoriesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
-  const [selectedItem, setSelectedItem] = useState(null)
-  const [items, setItems] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [categories, setCategories] = useState([])
   const [stats, setStats] = useState({
-    totalItems: 0,
-    activeItems: 0,
-    totalCategories: 0
+    totalCategories: 0,
+    activeCategories: 0,
+    totalItems: 0
   })
   const [loading, setLoading] = useState(true)
   const [tableLoading, setTableLoading] = useState(false)
@@ -41,16 +40,16 @@ export default function ItemsPage() {
   const [isSearching, setIsSearching] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
-  const [totalItems, setTotalItems] = useState(0)
+  const [totalCategories, setTotalCategories] = useState(0)
   const [sorting, setSorting] = useState({
     sortBy: 'created_at',
     sortOrder: 'DESC'
   })
 
   // Centralized API functions
-  const fetchItems = async () => {
+  const fetchCategories = async () => {
     try {
-      const response = await apiService.getItems({
+      const response = await apiService.getCategories({
         page: currentPage,
         size: perPage,
         name: debouncedSearchTerm || undefined,
@@ -58,84 +57,84 @@ export default function ItemsPage() {
         sort_direction: sorting.sortOrder,
       })
       if (response.data?.data) {
-        setItems(response.data.data)
+        setCategories(response.data.data)
         // Update total count
         if (response.data.total !== undefined) {
-          setTotalItems(response.data.total)
+          setTotalCategories(response.data.total)
         }
       } else {
-        setItems([])
+        setCategories([])
       }
     } catch (error) {
-      console.error('Error fetching items:', error)
-      toast.error('Failed to fetch items')
-      setItems([])
+      console.error('Error fetching categories:', error)
+      toast.error('Failed to fetch categories')
+      setCategories([])
     } finally {
       setTableLoading(false)
       setIsSearching(false)
     }
   }
-
+  
   const fetchStats = async () => {
     try {
       setLoading(true)
-      const response = await apiService.getItems({ page: 1, size: 10 })
+      const response = await apiService.getCategories({ page: 1, size: 10 })
       
       if (response.data?.data) {
-        const items = response.data.data
+        const categories = response.data.data
         setStats({
-          totalItems: items.length,
-          activeItems: items.length, // All items are considered active for now
-          totalCategories: new Set(items.map(item => item.category_id)).size
+          totalCategories: categories.length,
+          activeCategories: categories.length, // All categories are considered active for now
+          totalItems: 0 // This would need to be calculated from items using categories
         })
       }
     } catch (error) {
-      console.error('Error fetching item stats:', error)
+      console.error('Error fetching category stats:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const createItem = async (itemData) => {
+  const createCategory = async (categoryData) => {
     try {
-      await apiService.createItem(itemData)
-      toast.success("Item created successfully")
+      await apiService.createCategory(categoryData)
+      toast.success("Category created successfully")
       setIsAddDialogOpen(false)
-      await fetchItems()
+      await fetchCategories()
       await fetchStats()
     } catch (error) {
-      console.error('Error creating item:', error)
-      toast.error("Failed to create item. Please try again.")
+      console.error('Error creating category:', error)
+      toast.error("Failed to create category. Please try again.")
       throw error
     }
   }
 
-  const updateItem = async (itemId, itemData) => {
+  const updateCategory = async (categoryId, categoryData) => {
     try {
-      await apiService.updateItem(itemId, itemData)
-      toast.success("Item updated successfully")
+      await apiService.updateCategory(categoryId, categoryData)
+      toast.success("Category updated successfully")
       setIsEditDialogOpen(false)
-      setSelectedItem(null)
-      await fetchItems()
+      setSelectedCategory(null)
+      await fetchCategories()
       await fetchStats()
     } catch (error) {
-      console.error('Error updating item:', error)
-      toast.error("Failed to update item. Please try again.")
+      console.error('Error updating category:', error)
+      toast.error("Failed to update category. Please try again.")
       throw error
     }
   }
 
-  const deleteItem = async (itemId) => {
+  const deleteCategory = async (categoryId) => {
     try {
-      await apiService.deleteItem(itemId)
-      toast.success("Item deleted successfully")
+      await apiService.deleteCategory(categoryId)
+      toast.success("Category deleted successfully")
       setIsDeleteDialogOpen(false)
-      setSelectedItem(null)
-      await fetchItems()
+      setSelectedCategory(null)
+      await fetchCategories()
       await fetchStats()
     } catch (error) {
-      console.error('Error deleting item:', error)
-      toast.error("Failed to delete item. Please try again.")
+      console.error('Error deleting category:', error)
+      toast.error("Failed to delete category. Please try again.")
       throw error
     }
   }
@@ -153,9 +152,9 @@ export default function ItemsPage() {
     return () => clearTimeout(timer)
   }, [searchTerm, debouncedSearchTerm])
 
-  // Fetch items when dependencies change
+  // Fetch categories when dependencies change
   useEffect(() => {
-    fetchItems()
+    fetchCategories()
   }, [debouncedSearchTerm, currentPage, perPage, sorting.sortBy, sorting.sortOrder])
 
   useEffect(() => {
@@ -164,7 +163,7 @@ export default function ItemsPage() {
 
   const handleRefresh = () => {
     fetchStats()
-    fetchItems()
+    fetchCategories()
   }
 
   const handleSortingChange = (newSortBy, newSortOrder) => {
@@ -175,24 +174,19 @@ export default function ItemsPage() {
   }
 
   // Dialog handlers
-  const handleEditItem = (item) => {
-    setSelectedItem(item)
+  const handleEditCategory = (category) => {
+    setSelectedCategory(category)
     setIsEditDialogOpen(true)
   }
 
-  const handleDeleteItem = (item) => {
-    setSelectedItem(item)
+  const handleDeleteCategory = (category) => {
+    setSelectedCategory(category)
     setIsDeleteDialogOpen(true)
   }
 
-  const handleViewItem = (item) => {
-    setSelectedItem(item)
+  const handleViewCategory = (category) => {
+    setSelectedCategory(category)
     setIsViewDialogOpen(true)
-  }
-
-  // Show full page skeleton on initial load
-  if (loading && !debouncedSearchTerm) {
-    return <ItemsPageSkeleton />
   }
 
   return (
@@ -200,19 +194,62 @@ export default function ItemsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-balance">Items Management</h1>
+          <h1 className="text-3xl font-bold text-balance">Categories Management</h1>
         </div>
         <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
-          Add Item
+          Add Category
         </Button>
       </div>
 
       {/* Stats Cards */}
       {loading ? (
-        <StatsCardsSkeleton />
+        <div className="grid gap-4 md:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Categories</CardTitle>
+              <Tag className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {stats.totalCategories}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-primary">Available</span> categories
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Categories</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {stats.activeCategories}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                <span className="text-primary">Currently</span> in use
+              </p>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Items</CardTitle>
@@ -223,37 +260,7 @@ export default function ItemsPage() {
                 {stats.totalItems}
               </div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Active</span> items
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Items</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.activeItems}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Currently</span> active
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categories</CardTitle>
-              <Tag className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalCategories}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Different</span> categories
+                <span className="text-primary">Items</span> using categories
               </p>
             </CardContent>
           </Card>
@@ -267,7 +274,7 @@ export default function ItemsPage() {
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search items..."
+                placeholder="Search categories..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -281,13 +288,20 @@ export default function ItemsPage() {
           </div>
 
           {tableLoading ? (
-            <ItemsTableSkeleton />
+            <div className="space-y-4">
+              <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+              <div className="space-y-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-12 bg-gray-200 rounded animate-pulse"></div>
+                ))}
+              </div>
+            </div>
           ) : (
-            <ItemsTable 
-              items={items}
-              onEdit={handleEditItem}
-              onDelete={handleDeleteItem}
-              onView={handleViewItem}
+            <CategoriesTable 
+              categories={categories}
+              onEdit={handleEditCategory}
+              onDelete={handleDeleteCategory}
+              onView={handleViewCategory}
               sorting={sorting}
               onSortingChange={handleSortingChange}
             />
@@ -296,10 +310,10 @@ export default function ItemsPage() {
       </Card>
 
       {/* Pagination */}
-      {!tableLoading && totalItems > 0 && (
+      {!tableLoading && totalCategories > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 bg-white rounded-lg border shadow-sm p-4">
           <div className="text-sm text-gray-500 text-center sm:text-left">
-            Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, totalItems)} of {totalItems} entries
+            Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, totalCategories)} of {totalCategories} entries
           </div>
           <Pagination>
             <PaginationContent>
@@ -317,7 +331,7 @@ export default function ItemsPage() {
               </PaginationItem>
               <div className="hidden sm:flex">
                 {(() => {
-                  const totalPages = Math.ceil(totalItems / perPage)
+                  const totalPages = Math.ceil(totalCategories / perPage)
                   const maxVisiblePages = 7
                   const pages = []
                   
@@ -399,11 +413,11 @@ export default function ItemsPage() {
                   href="#"
                   onClick={(e) => {
                     e.preventDefault()
-                    if (currentPage < Math.ceil(totalItems / perPage) && !tableLoading) {
+                    if (currentPage < Math.ceil(totalCategories / perPage) && !tableLoading) {
                       setCurrentPage(currentPage + 1)
                     }
                   }}
-                  className={currentPage === Math.ceil(totalItems / perPage) || tableLoading ? "pointer-events-none opacity-50" : ""}
+                  className={currentPage === Math.ceil(totalCategories / perPage) || tableLoading ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
             </PaginationContent>
@@ -411,28 +425,28 @@ export default function ItemsPage() {
         </div>
       )}
 
-      <AddItemDialog 
+      <AddCategoryDialog 
         open={isAddDialogOpen} 
         onOpenChange={setIsAddDialogOpen}
-        onSubmit={createItem}
+        onSuccess={createCategory}
       />
 
-      {selectedItem && (
+      {selectedCategory && (
         <>
-          <EditItemDialog
-            item={selectedItem}
+          <EditCategoryDialog
+            category={selectedCategory}
             open={isEditDialogOpen}
             onOpenChange={setIsEditDialogOpen}
-            onSubmit={updateItem}
+            onSuccess={updateCategory}
           />
-          <DeleteItemDialog
-            item={selectedItem}
+          <DeleteCategoryDialog
+            category={selectedCategory}
             open={isDeleteDialogOpen}
             onOpenChange={setIsDeleteDialogOpen}
-            onSubmit={deleteItem}
+            onSuccess={deleteCategory}
           />
-          <ViewItemDialog 
-            item={selectedItem} 
+          <ViewCategoryDialog 
+            category={selectedCategory} 
             open={isViewDialogOpen} 
             onOpenChange={setIsViewDialogOpen} 
           />

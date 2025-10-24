@@ -1,13 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, Edit, Trash2, Eye, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 
-export const ItemsTable = ({ 
-  items,
+export const UnitConversionsTable = ({ 
+  conversions,
   onEdit,
   onDelete,
   onView,
@@ -34,6 +35,18 @@ export const ItemsTable = ({
     })
   }
 
+  const getOperationBadge = (operation) => {
+    const variants = {
+      'MULTIPLY': 'default',
+      'DIVIDE': 'secondary'
+    }
+    return (
+      <Badge variant={variants[operation] || 'outline'}>
+        {operation}
+      </Badge>
+    )
+  }
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -41,15 +54,49 @@ export const ItemsTable = ({
           <TableRow>
             <TableHead 
               className="cursor-pointer hover:bg-muted/50"
-              onClick={() => handleSort('name')}
+              onClick={() => handleSort('from_id')}
             >
               <div className="flex items-center gap-2">
-                Item Name
-                {getSortIcon('name')}
+                From Unit
+                {getSortIcon('from_id')}
               </div>
             </TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Color</TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-muted/50"
+              onClick={() => handleSort('to_id')}
+            >
+              <div className="flex items-center gap-2">
+                To Unit
+                {getSortIcon('to_id')}
+              </div>
+            </TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-muted/50"
+              onClick={() => handleSort('operation')}
+            >
+              <div className="flex items-center gap-2">
+                Operation
+                {getSortIcon('operation')}
+              </div>
+            </TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-muted/50"
+              onClick={() => handleSort('factor')}
+            >
+              <div className="flex items-center gap-2">
+                Factor
+                {getSortIcon('factor')}
+              </div>
+            </TableHead>
+            <TableHead 
+              className="cursor-pointer hover:bg-muted/50"
+              onClick={() => handleSort('sequence')}
+            >
+              <div className="flex items-center gap-2">
+                Sequence
+                {getSortIcon('sequence')}
+              </div>
+            </TableHead>
             <TableHead 
               className="cursor-pointer hover:bg-muted/50"
               onClick={() => handleSort('created_at')}
@@ -63,36 +110,31 @@ export const ItemsTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.length === 0 ? (
+          {conversions.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                No items found
+              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                No unit conversions found
               </TableCell>
             </TableRow>
           ) : (
-            items.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {item.category?.name || `Category #${item.category_id}`}
-                  </Badge>
+            conversions.map((conversion) => (
+              <TableRow key={`${conversion.from_id}-${conversion.to_id}`}>
+                <TableCell className="font-medium">
+                  {conversion.from_unit?.name || `Unit ${conversion.from_id}`}
+                </TableCell>
+                <TableCell className="font-medium">
+                  {conversion.to_unit?.name || `Unit ${conversion.to_id}`}
                 </TableCell>
                 <TableCell>
-                  {item.color ? (
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-4 h-4 rounded border border-gray-300"
-                        style={{ backgroundColor: item.color.color_code }}
-                        title={item.color.color_code}
-                      />
-                      <span className="text-sm">{item.color.name}</span>
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">No color</span>
-                  )}
+                  {getOperationBadge(conversion.operation)}
                 </TableCell>
-                <TableCell>{formatDate(item.created_at)}</TableCell>
+                <TableCell className="font-mono">
+                  {conversion.factor}
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">{conversion.sequence}</Badge>
+                </TableCell>
+                <TableCell>{formatDate(conversion.created_at)}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -101,15 +143,15 @@ export const ItemsTable = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onView(item)}>
+                      <DropdownMenuItem onClick={() => onView(conversion)}>
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(item)}>
+                      <DropdownMenuItem onClick={() => onEdit(conversion)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onDelete(item)} className="text-destructive">
+                      <DropdownMenuItem onClick={() => onDelete(conversion)} className="text-destructive">
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>

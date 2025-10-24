@@ -22,6 +22,9 @@ import {
   ChevronRight,
   Palette,
   Database,
+  Ruler,
+  ArrowRightLeft,
+  Tag,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -30,7 +33,7 @@ import { useAuth } from "@/contexts/auth-context"
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home, roles: ["super_admin", "admin", "manager", "user", "viewer"] },
   { name: "Sales Contracts", href: "/sales-contracts", icon: FileText, roles: ["super_admin", "admin", "manager", "user"] },
-  { name: "Stock Pipeline", href: "/purchase-invoices", icon: Receipt, roles: ["super_admin", "admin", "manager", "user"] },
+  { name: "Stock Pipeline", href: "/stock-pipeline", icon: Receipt, roles: ["super_admin", "admin", "manager", "user"] },
   { name: "Stock Transfer", href: "/inventory-transactions", icon: Warehouse, roles: ["super_admin", "admin", "manager", "user"] },
   { name: "Reports", href: "/reports", icon: BarChart3, roles: ["super_admin", "admin", "manager"] },
  // { name: "User Management", href: "/users", icon: UserCog, roles: ["super_admin", "admin"] },
@@ -46,6 +49,10 @@ const navigation = [
       { name: "Storage", href: "/settings/storage", icon: Warehouse },
       { name: "Items", href: "/settings/items", icon: Package },
       { name: "Jobs", href: "/settings/jobs", icon: FileText },
+      { name: "Units", href: "/settings/units", icon: Ruler },
+      { name: "Unit Conversions", href: "/settings/unit-conversions", icon: ArrowRightLeft },
+      { name: "Categories", href: "/settings/categories", icon: Tag },
+      { name: "Colors", href: "/settings/colors", icon: Palette },
     ]
   },
 ]
@@ -55,7 +62,7 @@ export function DashboardLayout({ children }) {
   const [expandedMenus, setExpandedMenus] = useState({})
   const router = useRouter()
   const pathname = usePathname()
-  const { user, logout, hasAnyRole } = useAuth()
+  const { user, logout, hasAnyRole, roles } = useAuth()
 
   // Filter navigation based on user roles
   const filteredNavigation = navigation.filter(item => 
@@ -78,6 +85,40 @@ export function DashboardLayout({ children }) {
       }
     })
   }, [router, filteredNavigation])
+
+  // Auto-expand parent menu when current page is a submenu item
+  useEffect(() => {
+    const newExpandedMenus = {}
+    
+    filteredNavigation.forEach((item) => {
+      if (item.submenu) {
+        // Check if current pathname matches any submenu item
+        const isSubmenuActive = item.submenu.some(subItem => pathname === subItem.href)
+        if (isSubmenuActive) {
+          newExpandedMenus[item.name] = true
+        }
+      }
+    })
+    
+    // Only update if there are changes to avoid unnecessary re-renders
+    if (Object.keys(newExpandedMenus).length > 0) {
+      setExpandedMenus(prev => {
+        // Check if we actually need to update by comparing with current state
+        const hasChanges = Object.keys(newExpandedMenus).some(
+          key => !prev[key] && newExpandedMenus[key]
+        )
+        
+        if (!hasChanges) {
+          return prev // Return same reference to prevent re-render
+        }
+        
+        return {
+          ...prev,
+          ...newExpandedMenus
+        }
+      })
+    }
+  }, [pathname]) // Remove filteredNavigation from dependencies
 
   const handleLogout = async () => {
     await logout()
@@ -199,16 +240,16 @@ export function DashboardLayout({ children }) {
             <p className="text-xs text-sidebar-foreground/70 truncate">
               {user?.email || 'user@example.com'}
             </p>
-            {user?.roles && user.roles.length > 0 && (
+            {roles && roles.length > 0 && (
               <div className="flex gap-1 mt-1">
-                {user.roles.slice(0, 2).map((role, index) => (
-                  <Badge key={role.id || role.name || index} variant="secondary" className="text-xs px-1 py-0">
-                    {role.name?.replace('_', ' ') || 'Unknown Role'}
+                {roles.slice(0, 2).map((role, index) => (
+                  <Badge key={role || index} variant="secondary" className="text-xs px-1 py-0">
+                    {role?.replace('_', ' ') || 'Unknown Role'}
                   </Badge>
                 ))}
-                {user.roles.length > 2 && (
+                {roles.length > 2 && (
                   <Badge variant="secondary" className="text-xs px-1 py-0">
-                    +{user.roles.length - 2}
+                    +{roles.length - 2}
                   </Badge>
                 )}
               </div>

@@ -662,14 +662,12 @@ export function InventoryTransactionsTable({ searchTerm, typeFilter, onRefresh }
       } else {
         console.error('API response error:', result.message)
         // Fallback to dummy data
-        console.log('Using dummy data as fallback')
         const transformedTransactions = transformApiData(DUMMY_DATA.data)
         setTransactions(transformedTransactions)
       }
     } catch (error) {
       console.error('Error fetching inventory transactions:', error)
       // Fallback to dummy data when API fails
-      console.log('API failed, using dummy data as fallback')
       const transformedTransactions = transformApiData(DUMMY_DATA.data)
       setTransactions(transformedTransactions)
     } finally {

@@ -1,11 +1,10 @@
 "use client"
 
-import { ItemsTable } from "@/components/items/items-table"
-import { AddItemDialog } from "@/components/items/add-item-dialog"
-import { EditItemDialog } from "@/components/items/edit-item-dialog"
-import { DeleteItemDialog } from "@/components/items/delete-item-dialog"
-import { ViewItemDialog } from "@/components/items/view-item-dialog"
-import { ItemsPageSkeleton, ItemsTableSkeleton, StatsCardsSkeleton } from "@/components/items/items-page-skeleton"
+import { UnitConversionsTable } from "@/components/unit-conversions/unit-conversions-table"
+import { AddUnitConversionDialog } from "@/components/unit-conversions/add-unit-conversion-dialog"
+import { EditUnitConversionDialog } from "@/components/unit-conversions/edit-unit-conversion-dialog"
+import { DeleteUnitConversionDialog } from "@/components/unit-conversions/delete-unit-conversion-dialog"
+import { ViewUnitConversionDialog } from "@/components/unit-conversions/view-unit-conversion-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,23 +16,23 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, Package, TrendingUp, Tag } from "lucide-react"
+import { Plus, Search, ArrowRightLeft, TrendingUp, Calculator } from "lucide-react"
 import { useState, useEffect } from "react"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
-export default function ItemsPage() {
+export default function UnitConversionsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
-  const [selectedItem, setSelectedItem] = useState(null)
-  const [items, setItems] = useState([])
+  const [selectedConversion, setSelectedConversion] = useState(null)
+  const [conversions, setConversions] = useState([])
   const [stats, setStats] = useState({
-    totalItems: 0,
-    activeItems: 0,
-    totalCategories: 0
+    totalConversions: 0,
+    activeConversions: 0,
+    totalRules: 0
   })
   const [loading, setLoading] = useState(true)
   const [tableLoading, setTableLoading] = useState(false)
@@ -41,16 +40,16 @@ export default function ItemsPage() {
   const [isSearching, setIsSearching] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
-  const [totalItems, setTotalItems] = useState(0)
+  const [totalConversions, setTotalConversions] = useState(0)
   const [sorting, setSorting] = useState({
     sortBy: 'created_at',
     sortOrder: 'DESC'
   })
 
   // Centralized API functions
-  const fetchItems = async () => {
+  const fetchConversions = async () => {
     try {
-      const response = await apiService.getItems({
+      const response = await apiService.getUnitConversions({
         page: currentPage,
         size: perPage,
         name: debouncedSearchTerm || undefined,
@@ -58,84 +57,84 @@ export default function ItemsPage() {
         sort_direction: sorting.sortOrder,
       })
       if (response.data?.data) {
-        setItems(response.data.data)
+        setConversions(response.data.data)
         // Update total count
         if (response.data.total !== undefined) {
-          setTotalItems(response.data.total)
+          setTotalConversions(response.data.total)
         }
       } else {
-        setItems([])
+        setConversions([])
       }
     } catch (error) {
-      console.error('Error fetching items:', error)
-      toast.error('Failed to fetch items')
-      setItems([])
+      console.error('Error fetching unit conversions:', error)
+      toast.error('Failed to fetch unit conversions')
+      setConversions([])
     } finally {
       setTableLoading(false)
       setIsSearching(false)
     }
   }
-
+  
   const fetchStats = async () => {
     try {
       setLoading(true)
-      const response = await apiService.getItems({ page: 1, size: 10 })
+      const response = await apiService.getUnitConversions({ page: 1, size: 10 })
       
       if (response.data?.data) {
-        const items = response.data.data
+        const conversions = response.data.data
         setStats({
-          totalItems: items.length,
-          activeItems: items.length, // All items are considered active for now
-          totalCategories: new Set(items.map(item => item.category_id)).size
+          totalConversions: conversions.length,
+          activeConversions: conversions.length, // All conversions are considered active for now
+          totalRules: conversions.length // This would need to be calculated from usage
         })
       }
     } catch (error) {
-      console.error('Error fetching item stats:', error)
+      console.error('Error fetching unit conversion stats:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const createItem = async (itemData) => {
+  const createConversion = async (conversionData) => {
     try {
-      await apiService.createItem(itemData)
-      toast.success("Item created successfully")
+      await apiService.createUnitConversion(conversionData)
+      toast.success("Unit conversion created successfully")
       setIsAddDialogOpen(false)
-      await fetchItems()
+      await fetchConversions()
       await fetchStats()
     } catch (error) {
-      console.error('Error creating item:', error)
-      toast.error("Failed to create item. Please try again.")
+      console.error('Error creating unit conversion:', error)
+      toast.error("Failed to create unit conversion. Please try again.")
       throw error
     }
   }
 
-  const updateItem = async (itemId, itemData) => {
+  const updateConversion = async (fromId, toId, conversionData) => {
     try {
-      await apiService.updateItem(itemId, itemData)
-      toast.success("Item updated successfully")
+      await apiService.updateUnitConversion(fromId, toId, conversionData)
+      toast.success("Unit conversion updated successfully")
       setIsEditDialogOpen(false)
-      setSelectedItem(null)
-      await fetchItems()
+      setSelectedConversion(null)
+      await fetchConversions()
       await fetchStats()
     } catch (error) {
-      console.error('Error updating item:', error)
-      toast.error("Failed to update item. Please try again.")
+      console.error('Error updating unit conversion:', error)
+      toast.error("Failed to update unit conversion. Please try again.")
       throw error
     }
   }
 
-  const deleteItem = async (itemId) => {
+  const deleteConversion = async (fromId, toId) => {
     try {
-      await apiService.deleteItem(itemId)
-      toast.success("Item deleted successfully")
+      await apiService.deleteUnitConversion(fromId, toId)
+      toast.success("Unit conversion deleted successfully")
       setIsDeleteDialogOpen(false)
-      setSelectedItem(null)
-      await fetchItems()
+      setSelectedConversion(null)
+      await fetchConversions()
       await fetchStats()
     } catch (error) {
-      console.error('Error deleting item:', error)
-      toast.error("Failed to delete item. Please try again.")
+      console.error('Error deleting unit conversion:', error)
+      toast.error("Failed to delete unit conversion. Please try again.")
       throw error
     }
   }
@@ -153,9 +152,9 @@ export default function ItemsPage() {
     return () => clearTimeout(timer)
   }, [searchTerm, debouncedSearchTerm])
 
-  // Fetch items when dependencies change
+  // Fetch conversions when dependencies change
   useEffect(() => {
-    fetchItems()
+    fetchConversions()
   }, [debouncedSearchTerm, currentPage, perPage, sorting.sortBy, sorting.sortOrder])
 
   useEffect(() => {
@@ -164,7 +163,7 @@ export default function ItemsPage() {
 
   const handleRefresh = () => {
     fetchStats()
-    fetchItems()
+    fetchConversions()
   }
 
   const handleSortingChange = (newSortBy, newSortOrder) => {
@@ -175,24 +174,19 @@ export default function ItemsPage() {
   }
 
   // Dialog handlers
-  const handleEditItem = (item) => {
-    setSelectedItem(item)
+  const handleEditConversion = (conversion) => {
+    setSelectedConversion(conversion)
     setIsEditDialogOpen(true)
   }
 
-  const handleDeleteItem = (item) => {
-    setSelectedItem(item)
+  const handleDeleteConversion = (conversion) => {
+    setSelectedConversion(conversion)
     setIsDeleteDialogOpen(true)
   }
 
-  const handleViewItem = (item) => {
-    setSelectedItem(item)
+  const handleViewConversion = (conversion) => {
+    setSelectedConversion(conversion)
     setIsViewDialogOpen(true)
-  }
-
-  // Show full page skeleton on initial load
-  if (loading && !debouncedSearchTerm) {
-    return <ItemsPageSkeleton />
   }
 
   return (
@@ -200,60 +194,73 @@ export default function ItemsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-balance">Items Management</h1>
+          <h1 className="text-3xl font-bold text-balance">Unit Conversions Management</h1>
         </div>
         <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
-          Add Item
+          Add Conversion
         </Button>
       </div>
 
       {/* Stats Cards */}
       {loading ? (
-        <StatsCardsSkeleton />
+        <div className="grid gap-4 md:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Total Conversions</CardTitle>
+              <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.totalItems}
+                {stats.totalConversions}
               </div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Active</span> items
+                <span className="text-primary">Available</span> conversions
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Items</CardTitle>
+              <CardTitle className="text-sm font-medium">Active Conversions</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.activeItems}
+                {stats.activeConversions}
               </div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Currently</span> active
+                <span className="text-primary">Currently</span> in use
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categories</CardTitle>
-              <Tag className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Total Rules</CardTitle>
+              <Calculator className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {stats.totalCategories}
+                {stats.totalRules}
               </div>
               <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Different</span> categories
+                <span className="text-primary">Conversion</span> rules
               </p>
             </CardContent>
           </Card>
@@ -267,7 +274,7 @@ export default function ItemsPage() {
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search items..."
+                placeholder="Search conversions..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -281,13 +288,20 @@ export default function ItemsPage() {
           </div>
 
           {tableLoading ? (
-            <ItemsTableSkeleton />
+            <div className="space-y-4">
+              <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+              <div className="space-y-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-12 bg-gray-200 rounded animate-pulse"></div>
+                ))}
+              </div>
+            </div>
           ) : (
-            <ItemsTable 
-              items={items}
-              onEdit={handleEditItem}
-              onDelete={handleDeleteItem}
-              onView={handleViewItem}
+            <UnitConversionsTable 
+              conversions={conversions}
+              onEdit={handleEditConversion}
+              onDelete={handleDeleteConversion}
+              onView={handleViewConversion}
               sorting={sorting}
               onSortingChange={handleSortingChange}
             />
@@ -296,10 +310,10 @@ export default function ItemsPage() {
       </Card>
 
       {/* Pagination */}
-      {!tableLoading && totalItems > 0 && (
+      {!tableLoading && totalConversions > 0 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 bg-white rounded-lg border shadow-sm p-4">
           <div className="text-sm text-gray-500 text-center sm:text-left">
-            Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, totalItems)} of {totalItems} entries
+            Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, totalConversions)} of {totalConversions} entries
           </div>
           <Pagination>
             <PaginationContent>
@@ -317,7 +331,7 @@ export default function ItemsPage() {
               </PaginationItem>
               <div className="hidden sm:flex">
                 {(() => {
-                  const totalPages = Math.ceil(totalItems / perPage)
+                  const totalPages = Math.ceil(totalConversions / perPage)
                   const maxVisiblePages = 7
                   const pages = []
                   
@@ -399,11 +413,11 @@ export default function ItemsPage() {
                   href="#"
                   onClick={(e) => {
                     e.preventDefault()
-                    if (currentPage < Math.ceil(totalItems / perPage) && !tableLoading) {
+                    if (currentPage < Math.ceil(totalConversions / perPage) && !tableLoading) {
                       setCurrentPage(currentPage + 1)
                     }
                   }}
-                  className={currentPage === Math.ceil(totalItems / perPage) || tableLoading ? "pointer-events-none opacity-50" : ""}
+                  className={currentPage === Math.ceil(totalConversions / perPage) || tableLoading ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
             </PaginationContent>
@@ -411,28 +425,28 @@ export default function ItemsPage() {
         </div>
       )}
 
-      <AddItemDialog 
+      <AddUnitConversionDialog 
         open={isAddDialogOpen} 
         onOpenChange={setIsAddDialogOpen}
-        onSubmit={createItem}
+        onSuccess={createConversion}
       />
 
-      {selectedItem && (
+      {selectedConversion && (
         <>
-          <EditItemDialog
-            item={selectedItem}
+          <EditUnitConversionDialog
+            conversion={selectedConversion}
             open={isEditDialogOpen}
             onOpenChange={setIsEditDialogOpen}
-            onSubmit={updateItem}
+            onSuccess={updateConversion}
           />
-          <DeleteItemDialog
-            item={selectedItem}
+          <DeleteUnitConversionDialog
+            conversion={selectedConversion}
             open={isDeleteDialogOpen}
             onOpenChange={setIsDeleteDialogOpen}
-            onSubmit={deleteItem}
+            onSuccess={deleteConversion}
           />
-          <ViewItemDialog 
-            item={selectedItem} 
+          <ViewUnitConversionDialog 
+            conversion={selectedConversion} 
             open={isViewDialogOpen} 
             onOpenChange={setIsViewDialogOpen} 
           />

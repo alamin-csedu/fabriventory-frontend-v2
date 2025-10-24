@@ -187,7 +187,6 @@ export function AddInventoryTransactionDialog({ open, onOpenChange, onSuccess }:
         throw new Error(result.message || 'Failed to create transaction')
       }
       
-      console.log("Inventory transaction created successfully:", result.data)
 
       toast({
         title: "Success",

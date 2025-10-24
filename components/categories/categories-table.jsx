@@ -1,13 +1,13 @@
 "use client"
 
+import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, Edit, Trash2, Eye, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 
-export const ItemsTable = ({ 
-  items,
+export const CategoriesTable = ({ 
+  categories,
   onEdit,
   onDelete,
   onView,
@@ -44,12 +44,10 @@ export const ItemsTable = ({
               onClick={() => handleSort('name')}
             >
               <div className="flex items-center gap-2">
-                Item Name
+                Name
                 {getSortIcon('name')}
               </div>
             </TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Color</TableHead>
             <TableHead 
               className="cursor-pointer hover:bg-muted/50"
               onClick={() => handleSort('created_at')}
@@ -63,36 +61,19 @@ export const ItemsTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.length === 0 ? (
+          {categories.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                No items found
+              <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                No categories found
               </TableCell>
             </TableRow>
           ) : (
-            items.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {item.category?.name || `Category #${item.category_id}`}
-                  </Badge>
+            categories.map((category) => (
+              <TableRow key={category.id}>
+                <TableCell className="font-medium">
+                  {category.name}
                 </TableCell>
-                <TableCell>
-                  {item.color ? (
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-4 h-4 rounded border border-gray-300"
-                        style={{ backgroundColor: item.color.color_code }}
-                        title={item.color.color_code}
-                      />
-                      <span className="text-sm">{item.color.name}</span>
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">No color</span>
-                  )}
-                </TableCell>
-                <TableCell>{formatDate(item.created_at)}</TableCell>
+                <TableCell>{formatDate(category.created_at)}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -101,15 +82,15 @@ export const ItemsTable = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onView(item)}>
+                      <DropdownMenuItem onClick={() => onView(category)}>
                         <Eye className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onEdit(item)}>
+                      <DropdownMenuItem onClick={() => onEdit(category)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onDelete(item)} className="text-destructive">
+                      <DropdownMenuItem onClick={() => onDelete(category)} className="text-destructive">
                         <Trash2 className="mr-2 h-4 w-4" />
                         Delete
                       </DropdownMenuItem>
