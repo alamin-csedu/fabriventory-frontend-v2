@@ -6,21 +6,21 @@ import { useAuth } from "@/contexts/auth-context"
 
 export default function HomePage() {
   const router = useRouter()
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isInitialized } = useAuth()
 
   useEffect(() => {
-    if (!isLoading) {
+    if (isInitialized) {
       if (isAuthenticated) {
         router.push("/dashboard")
       } else {
         router.push("/login")
       }
     }
-  }, [isAuthenticated, isLoading, router])
+  }, [isAuthenticated, isInitialized, router])
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
     </div>
   )
 }

@@ -5,14 +5,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Trash2, Eye, Plus } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, Eye, Plus, ArrowRight } from "lucide-react"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
 interface StockLedger {
   id: number
   job_id: number
-  type: "Booking" | "Delivery" | "IN" | "OUT"
+  type: "Booking" | "Delivery"
   parent_id: number | null
   vendor_id: number
   delivery_receipt_url: string | null
@@ -56,12 +56,13 @@ interface StockLedger {
 interface StockLedgerTableProps {
   searchTerm: string
   typeFilter: string
-  onRefresh?: () => void
+  refreshTrigger?: number
   onEdit?: (stockLedger: StockLedger) => void
   onView?: (stockLedger: StockLedger) => void
+  onGoToTimeline?: (stockLedger: StockLedger) => void
 }
 
-export function StockLedgerTable({ searchTerm, typeFilter, onRefresh, onEdit, onView }: StockLedgerTableProps) {
+export function StockLedgerTable({ searchTerm, typeFilter, refreshTrigger, onEdit, onView, onGoToTimeline }: StockLedgerTableProps) {
   const [stockLedgers, setStockLedgers] = useState<StockLedger[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedStockLedger, setSelectedStockLedger] = useState<StockLedger | null>(null)
@@ -89,7 +90,7 @@ export function StockLedgerTable({ searchTerm, typeFilter, onRefresh, onEdit, on
 
   useEffect(() => {
     fetchStockLedgers()
-  }, [searchTerm, typeFilter])
+  }, [searchTerm, typeFilter, refreshTrigger])
 
   const handleEdit = (stockLedger: StockLedger) => {
     if (onEdit) {
@@ -114,6 +115,12 @@ export function StockLedgerTable({ searchTerm, typeFilter, onRefresh, onEdit, on
     }
   }
 
+  const handleGoToTimeline = (stockLedger: StockLedger) => {
+    if (onGoToTimeline) {
+      onGoToTimeline(stockLedger)
+    }
+  }
+
   const handleDeleteConfirm = async () => {
     if (!selectedStockLedger) return
 
@@ -122,7 +129,7 @@ export function StockLedgerTable({ searchTerm, typeFilter, onRefresh, onEdit, on
       setStockLedgers(stockLedgers.filter((sl) => sl.id !== selectedStockLedger.id))
       setDeleteDialogOpen(false)
       toast.success("Stock ledger deleted successfully")
-      onRefresh?.()
+      // Refresh will be triggered automatically by the refreshTrigger prop
     } catch (error) {
       console.error("Error deleting stock ledger:", error)
       toast.error("Failed to delete stock ledger")
@@ -141,8 +148,6 @@ export function StockLedgerTable({ searchTerm, typeFilter, onRefresh, onEdit, on
     const typeConfig = {
       Booking: { variant: "default" as const, label: "Booking" },
       Delivery: { variant: "secondary" as const, label: "Delivery" },
-      IN: { variant: "default" as const, label: "IN" },
-      OUT: { variant: "secondary" as const, label: "OUT" },
     }
     const config = typeConfig[type as keyof typeof typeConfig] || { variant: "outline" as const, label: type }
     return <Badge variant={config.variant}>{config.label}</Badge>
@@ -169,7 +174,7 @@ export function StockLedgerTable({ searchTerm, typeFilter, onRefresh, onEdit, on
               <TableHead>Parent</TableHead>
               <TableHead>Payment Reference</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead className="w-[70px]">Actions</TableHead>
+              <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -198,27 +203,39 @@ export function StockLedgerTable({ searchTerm, typeFilter, onRefresh, onEdit, on
                   </TableCell>
                   <TableCell>{formatDate(stockLedger.created_at)}</TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
+                    <div className="flex items-center gap-2">
+                      {onGoToTimeline && stockLedger.type === "Booking" && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleGoToTimeline(stockLedger)}
+                          className="gap-1"
+                        >
+                          <ArrowRight className="h-3 w-3" />
+                          Go
                         </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleView(stockLedger)}>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEdit(stockLedger)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(stockLedger)} className="text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleView(stockLedger)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(stockLedger)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDelete(stockLedger)} className="text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

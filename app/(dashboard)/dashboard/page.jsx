@@ -34,6 +34,7 @@ import {
   ArrowDownRight
 } from "lucide-react"
 import { apiService } from "@/lib/api"
+import { getFirstNStoragePathSegments } from "@/lib/utils"
 import { toast } from "sonner"
 
 export default function DashboardPage() {
@@ -46,6 +47,7 @@ export default function DashboardPage() {
     if (!isAuthenticated) {
       router.push("/login")
     } else {
+      console.log('Authenticated, fetching dashboard data')
       fetchDashboardData()
     }
   }, [isAuthenticated, router])
@@ -55,6 +57,7 @@ export default function DashboardPage() {
       setLoading(true)
       const response = await apiService.getDashboardOverview()
       setDashboardData(response.data)
+      console.log('Dashboard data fetched:', response.data)
     } catch (error) {
       console.error("Error fetching dashboard data:", error)
       toast.error("Failed to load dashboard data")
@@ -110,7 +113,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold text-balance">Dashboard Overview</h1>
           <p className="text-muted-foreground text-pretty">
-            System statistics and analytics for Fabrimentory
+            System statistics and analytics for Fabriventory
           </p>
         </div>
         <Button onClick={fetchDashboardData} variant="outline" size="sm">
@@ -218,7 +221,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {items.items_by_category.slice(0, 5).map((category) => (
+              {items.items_by_category?.slice(0, 5).map((category) => (
                 <div key={category.category_id} className="flex items-center justify-between">
                   <span className="text-sm font-medium">{category.category_name}</span>
                   <div className="flex items-center space-x-2">
@@ -248,7 +251,7 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {items.top_items.slice(0, 5).map((item) => (
+                {items.top_items?.slice(0, 5).map((item) => (
                   <TableRow key={item.item_id}>
                     <TableCell className="font-medium">{item.item_name}</TableCell>
                     <TableCell className="text-right font-mono">
@@ -275,7 +278,7 @@ export default function DashboardPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {vendors.top_vendors.slice(0, 5).map((vendor) => (
+                {vendors.top_vendors?.slice(0, 5).map((vendor) => (
                   <TableRow key={vendor.vendor_id}>
                     <TableCell className="font-medium">{vendor.vendor_name}</TableCell>
                     <TableCell className="text-right font-mono">
@@ -294,28 +297,44 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Storage Capacity</CardTitle>
-            <CardDescription>Storage utilization across locations</CardDescription>
+            <CardDescription>Storage utilization (only locations with capacity &gt; 0)</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {storage.storage_capacity.slice(0, 5).map((storageItem) => {
-                const utilizationPercentage = (storageItem.used / storageItem.capacity) * 100
-                return (
-                  <div key={storageItem.storage_id} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{storageItem.storage_name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {formatNumber(storageItem.used)} / {formatNumber(storageItem.capacity)}
-                      </span>
+            <div className="max-h-[320px] overflow-y-auto space-y-4 pr-1">
+              {storage.storage_capacity
+                ?.filter((s) => s.capacity != null && Number(s.capacity) !== 0)
+                .map((storageItem) => {
+                  const utilizationPercentage =
+                    Number(storageItem.capacity) > 0
+                      ? (Number(storageItem.used) / Number(storageItem.capacity)) * 100
+                      : 0
+                  const address = storageItem.address ?? storageItem.storage_name ?? ""
+                  const displayAddress = getFirstNStoragePathSegments(address, 3) || address
+                  return (
+                    <div key={storageItem.storage_id} className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className="text-sm font-medium truncate min-w-0"
+                          title={address}
+                        >
+                          {displayAddress}
+                        </span>
+                        <span className="text-sm text-muted-foreground shrink-0">
+                          {formatNumber(storageItem.used)} / {formatNumber(storageItem.capacity)}
+                        </span>
+                      </div>
+                      <Progress value={utilizationPercentage} className="h-2" />
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{utilizationPercentage.toFixed(1)}% utilized</span>
+                        <span>{formatNumber(storageItem.available)} available</span>
+                      </div>
                     </div>
-                    <Progress value={utilizationPercentage} className="h-2" />
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{utilizationPercentage.toFixed(1)}% utilized</span>
-                      <span>{formatNumber(storageItem.available)} available</span>
-                    </div>
-                  </div>
-                )
-              })}
+                  )
+                })}
+              {(!storage.storage_capacity ||
+                storage.storage_capacity.filter((s) => s.capacity != null && Number(s.capacity) !== 0).length === 0) && (
+                <p className="text-sm text-muted-foreground py-4 text-center">No storage locations with capacity defined.</p>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -327,7 +346,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {jobs.recent_jobs.slice(0, 5).map((job) => (
+              {jobs.recent_jobs?.slice(0, 5).map((job) => (
                 <div key={job.job_id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
                     <p className="font-medium">{job.job_name}</p>

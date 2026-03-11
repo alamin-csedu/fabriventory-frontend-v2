@@ -25,16 +25,18 @@ import {
   Ruler,
   ArrowRightLeft,
   Tag,
+  Boxes,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/contexts/auth-context"
 
 const navigation = [
-  { name: "Dashboard", href: "/", icon: Home, roles: ["super_admin", "admin", "manager", "user", "viewer"] },
+  { name: "Dashboard", href: "/dashboard", icon: Home, roles: ["super_admin", "admin", "manager", "user", "viewer"] },
   { name: "Sales Contracts", href: "/sales-contracts", icon: FileText, roles: ["super_admin", "admin", "manager", "user"] },
   { name: "Stock Pipeline", href: "/stock-pipeline", icon: Receipt, roles: ["super_admin", "admin", "manager", "user"] },
-  { name: "Stock Transfer", href: "/inventory-transactions", icon: Warehouse, roles: ["super_admin", "admin", "manager", "user"] },
+  { name: "Stock Transfer", href: "/stock-transfer", icon: Warehouse, roles: ["super_admin", "admin", "manager", "user"] },
+  { name: "Stocks", href: "/stocks", icon: Boxes, roles: ["super_admin", "admin", "manager", "user", "viewer"] },
   { name: "Reports", href: "/reports", icon: BarChart3, roles: ["super_admin", "admin", "manager"] },
  // { name: "User Management", href: "/users", icon: UserCog, roles: ["super_admin", "admin"] },
 // { name: "Role Management", href: "/roles", icon: Shield, roles: ["super_admin"] },
@@ -139,7 +141,7 @@ export function DashboardLayout({ children }) {
           <Package className="w-4 h-4 text-sidebar-primary" />
         </div>
         <div>
-          <h1 className="font-bold text-sm text-sidebar-foreground">FABRIMENTORY</h1>
+          <h1 className="font-bold text-sm text-sidebar-foreground">FABRIVENTORY</h1>
           <p className="text-[8px] text-sidebar-foreground/70">Enforced Efficiency</p>
         </div>
       </div>
@@ -305,7 +307,7 @@ export function DashboardLayout({ children }) {
                 <Building2 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-3xl text-foreground tracking-tight">Sinha Knit Industries Ltd.</h1>
+                <h1 className="font-bold text-3xl text-foreground tracking-tight">XYZ Knit Industries Limited</h1>
                 <p className="text-[13px] text-muted-foreground font-medium">Chamurkhan, Uttarkhan, Uttara, Dhaka-1230</p>
               </div>
             </div>

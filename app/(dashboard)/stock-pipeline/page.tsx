@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Search, Receipt, TrendingUp, Clock, CheckCircle, Database } from "lucide-react"
+import { Plus, Search, Receipt, TrendingUp, Clock, CheckCircle, Database, ArrowRight } from "lucide-react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function StockLedgerPage() {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
-  const [typeFilter, setTypeFilter] = useState("all")
+  const [typeFilter, setTypeFilter] = useState("Booking") // Default to show only bookings
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
@@ -34,17 +36,21 @@ export default function StockLedgerPage() {
     setIsViewDialogOpen(true)
   }
 
+  const handleGoToTimeline = (stockLedger: any) => {
+    router.push(`/stock-pipeline/${stockLedger.id}/timeline`)
+  }
+
   return (
     <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-balance">Stock Ledger</h1>
-              <p className="text-muted-foreground text-pretty">Manage stock ledger entries and inventory transactions</p>
+              <h1 className="text-3xl font-bold text-balance">Stock Pipeline</h1>
+              <p className="text-muted-foreground text-pretty">Manage booking entries and track their delivery timeline</p>
             </div>
             <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
               <Plus className="h-4 w-4" />
-              Add Stock Ledger
+              Add Booking
             </Button>
           </div>
 
@@ -52,7 +58,7 @@ export default function StockLedgerPage() {
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Entries</CardTitle>
+                <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
                 <Database className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -65,23 +71,23 @@ export default function StockLedgerPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Stock IN</CardTitle>
+                <CardTitle className="text-sm font-medium">Delivered</CardTitle>
                 <CheckCircle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">89</div>
-                <p className="text-xs text-muted-foreground">Stock received</p>
+                <p className="text-xs text-muted-foreground">Fully delivered</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Stock OUT</CardTitle>
+                <CardTitle className="text-sm font-medium">In Progress</CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">23</div>
-                <p className="text-xs text-muted-foreground">Stock issued</p>
+                <p className="text-xs text-muted-foreground">Partial deliveries</p>
               </CardContent>
             </Card>
 
@@ -102,15 +108,15 @@ export default function StockLedgerPage() {
           {/* Search and Filters */}
           <Card>
             <CardHeader>
-              <CardTitle>Stock Ledger</CardTitle>
-              <CardDescription>View and manage all stock ledger entries and inventory transactions</CardDescription>
+              <CardTitle>Booking Entries</CardTitle>
+              <CardDescription>View and manage booking entries - click "Go" to see full timeline</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4 mb-6">
                 <div className="relative flex-1 max-w-sm">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search stock ledgers..."
+                    placeholder="Search bookings..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -121,8 +127,8 @@ export default function StockLedgerPage() {
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="Booking">Booking Only</SelectItem>
                     <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="Booking">Booking</SelectItem>
                     <SelectItem value="Delivery">Delivery</SelectItem>
                   </SelectContent>
                 </Select>
@@ -131,9 +137,10 @@ export default function StockLedgerPage() {
               <StockLedgerTable 
                 searchTerm={searchTerm} 
                 typeFilter={typeFilter} 
-                onRefresh={handleRefresh}
+                refreshTrigger={refreshTrigger}
                 onEdit={handleEdit}
                 onView={handleView}
+                onGoToTimeline={handleGoToTimeline}
               />
             </CardContent>
           </Card>

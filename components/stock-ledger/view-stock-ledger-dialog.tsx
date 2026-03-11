@@ -13,7 +13,7 @@ import { StockLedgerItemsDialog } from "./stock-ledger-items-dialog"
 interface StockLedger {
   id: number
   job_id: number
-  type: "Booking" | "Delivery" | "IN" | "OUT"
+  type: "Booking" | "Delivery"
   parent_id: number | null
   vendor_id: number
   delivery_receipt_url: string | null
@@ -120,8 +120,6 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
     const typeConfig = {
       Booking: { variant: "default" as const, label: "Booking" },
       Delivery: { variant: "secondary" as const, label: "Delivery" },
-      IN: { variant: "default" as const, label: "IN" },
-      OUT: { variant: "secondary" as const, label: "OUT" },
     }
     const config = typeConfig[type as keyof typeof typeConfig] || { variant: "outline" as const, label: type }
     return <Badge variant={config.variant}>{config.label}</Badge>

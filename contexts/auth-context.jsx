@@ -4,13 +4,12 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { useRouter } from 'next/navigation'
 import { authApi, AuthApiError } from '@/lib/api/auth'
 import { User, LoginRequest, RegisterRequest, PermissionCheck, PERMISSIONS } from '@/lib/types/auth'
-import { AuthLoading } from '@/components/auth-loading'
 import Cookies from 'js-cookie'
 
 export const AuthContext = createContext({
   user: null,
-  isLoading: false,
   isAuthenticated: false,
+  isInitialized: false,
   login: () => Promise.resolve(),
   register: () => Promise.resolve(),
   logout: () => Promise.resolve(),
@@ -27,10 +26,10 @@ export const AuthContext = createContext({
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [permissions, setPermissions] = useState(null)
   const [roles, setRoles] = useState(null)
+  const [isInitialized, setIsInitialized] = useState(false)
   const router = useRouter()
 
   const isAuthenticated = !!user
@@ -134,7 +133,6 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (credentials) => {
     try {
-      setIsLoading(true)
       setError(null)
       
       const loginResponse = await authApi.login(credentials)
@@ -151,14 +149,11 @@ export function AuthProvider({ children }) {
         setError('Login failed. Please try again.')
       }
       throw error
-    } finally {
-      setIsLoading(false)
     }
-  }, [router])
+  }, [router, saveAuthData])
 
   const register = useCallback(async (userData) => {
     try {
-      setIsLoading(true)
       setError(null)
       
       const registerResponse = await authApi.register(userData)
@@ -175,10 +170,8 @@ export function AuthProvider({ children }) {
         setError('Registration failed. Please try again.')
       }
       throw error
-    } finally {
-      setIsLoading(false)
     }
-  }, [router])
+  }, [router, saveAuthData])
 
   const logout = useCallback(async () => {
     try {
@@ -227,29 +220,29 @@ export function AuthProvider({ children }) {
     return permissions.some(permission => hasPermission(permission))
   }, [hasPermission, roles])
 
-  // Initialize auth state on mount
+  // Initialize auth state on mount (load from cookies, then validate token)
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        setIsLoading(true)
-        
         // Only run on client side
         if (typeof window === 'undefined') {
-          setIsLoading(false)
+          setIsInitialized(true)
           return
         }
-        
-        // Load auth data from cookies first
+
+        // Load auth data from cookies first so UI can show user immediately if we have tokens
         loadAuthData()
-        
+
         if (!authApi.isAuthenticated()) {
           setUser(null)
+          setIsInitialized(true)
           return
         }
 
         const isValid = await authApi.ensureValidToken()
         if (!isValid) {
           setUser(null)
+          setIsInitialized(true)
           return
         }
 
@@ -258,7 +251,7 @@ export function AuthProvider({ children }) {
         console.error('Auth initialization failed:', error)
         setUser(null)
       } finally {
-        setIsLoading(false)
+        setIsInitialized(true)
       }
     }
 
@@ -283,8 +276,8 @@ export function AuthProvider({ children }) {
 
 const value = {
     user,
-    isLoading,
     isAuthenticated,
+    isInitialized,
     login,
     register,
     logout,
@@ -297,11 +290,6 @@ const value = {
     clearError,
     permissions,
     roles,
-  }
-
-  // Show loading screen during initial authentication check
-  if (isLoading && typeof window !== 'undefined') {
-    return <AuthLoading />
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

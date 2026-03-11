@@ -13,7 +13,7 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "FABRIMENTORY - Project Inventory Management System",
+  title: "FABRIVENTORY - Project Inventory Management System",
   description: "Professional fabric inventory management system for garment manufacturing",
   generator: "v0.app",
   icons: {

@@ -3,10 +3,10 @@
 import { useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, Edit, Trash2, Eye, ArrowUpDown, ArrowUp, ArrowDown, GitBranch, ChevronDown, ChevronRight, Loader2, ChevronRight as ChevronRightIcon } from "lucide-react"
 import { apiService } from "@/lib/api"
+import { getFirstNStoragePathSegments } from "@/lib/utils"
 import { toast } from "sonner"
 
 export const StorageTable = ({ 
@@ -98,15 +98,6 @@ export const StorageTable = ({
             </TableHead>
             <TableHead 
               className="cursor-pointer hover:bg-muted/50"
-              onClick={() => handleSort('parent_id')}
-            >
-              <div className="flex items-center gap-2">
-                Parent
-                {getSortIcon('parent_id')}
-              </div>
-            </TableHead>
-            <TableHead 
-              className="cursor-pointer hover:bg-muted/50"
               onClick={() => handleSort('capacity')}
             >
               <div className="flex items-center gap-2">
@@ -129,7 +120,7 @@ export const StorageTable = ({
         <TableBody>
           {storages.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+              <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                 No storage locations found
               </TableCell>
             </TableRow>
@@ -139,7 +130,11 @@ export const StorageTable = ({
                 <TableRow key={storage.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
-                      <span>{storage.name}</span>
+                      <span title={storage.address ?? storage.name}>
+                        {(storage.address != null && storage.address !== "")
+                          ? getFirstNStoragePathSegments(storage.address, 3)
+                          : (getFirstNStoragePathSegments(storage.name, 3) || storage.name)}
+                      </span>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -150,29 +145,6 @@ export const StorageTable = ({
                         <GitBranch className="h-3 w-3 text-blue-600" />
                       </Button>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    {storage.parent ? (
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                          <span className="text-sm font-medium text-gray-900">{storage.parent.name}</span>
-                        </div>
-                        <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                          Parent
-                        </Badge>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                          <span className="text-sm font-medium text-gray-900">Root Location</span>
-                        </div>
-                        <Badge variant="outline" className="text-xs px-2 py-0.5">
-                          Main
-                        </Badge>
-                      </div>
-                    )}
                   </TableCell>
                   <TableCell>{formatCapacity(storage.capacity)}</TableCell>
                   <TableCell>{formatDate(storage.created_at)}</TableCell>
@@ -204,7 +176,7 @@ export const StorageTable = ({
                 {/* Hierarchy Display Row */}
                 {expandedHierarchies.has(storage.id) && (
                   <TableRow key={`${storage.id}-hierarchy`} className="bg-blue-50/30">
-                    <TableCell colSpan={5} className="p-0">
+                    <TableCell colSpan={4} className="p-0">
                       <div className="p-3 border-l-4 border-blue-500 bg-blue-50/50">
                         <div className="flex items-center gap-2 mb-2">
                           <GitBranch className="h-4 w-4 text-blue-600" />

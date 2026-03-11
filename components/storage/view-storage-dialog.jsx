@@ -55,6 +55,16 @@ export function ViewStorageDialog({ storage, open, onOpenChange }) {
                   <p className="text-sm text-muted-foreground">{storage.capacity || "N/A"}</p>
                 </div>
               </div>
+
+              {storage.address != null && storage.address !== "" && (
+                <div className="flex items-center gap-3">
+                  <Hash className="h-4 w-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium">Address</p>
+                    <p className="text-sm text-muted-foreground">{storage.address}</p>
+                  </div>
+                </div>
+              )}
               
               <div className="flex items-center gap-3">
                 <Hash className="h-4 w-4 text-muted-foreground" />

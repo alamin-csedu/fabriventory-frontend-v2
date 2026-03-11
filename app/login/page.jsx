@@ -17,6 +17,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isRegisterMode, setIsRegisterMode] = useState(false)
   
+  // Local loading states
+  const [isLoginLoading, setIsLoginLoading] = useState(false)
+  const [isRegisterLoading, setIsRegisterLoading] = useState(false)
+  
   // Registration form fields
   const [regData, setRegData] = useState({
     username: "",
@@ -27,38 +31,48 @@ export default function LoginPage() {
     lastName: ""
   })
   
-  const { login, register, isLoading, error, clearError, isAuthenticated } = useAuth()
+  const { login, register, error, clearError, isAuthenticated, isInitialized } = useAuth()
   const router = useRouter()
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (after auth state is initialized to avoid flash)
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isInitialized && isAuthenticated) {
       router.push("/dashboard")
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, isInitialized, router])
 
-  // Clear error when switching modes
+  // Clear error and reset loading states when switching modes
   useEffect(() => {
     clearError()
+    setIsLoginLoading(false)
+    setIsRegisterLoading(false)
   }, [isRegisterMode, clearError])
 
   const handleLogin = async (e) => {
     e.preventDefault()
+    if (isLoginLoading) return // Prevent multiple submissions
+    
     try {
+      setIsLoginLoading(true)
       await login({ username: email, password })
     } catch (error) {
       // Error is handled by the auth context
+    } finally {
+      setIsLoginLoading(false)
     }
   }
 
   const handleRegister = async (e) => {
     e.preventDefault()
     
+    if (isRegisterLoading) return // Prevent multiple submissions
+    
     if (regData.password !== regData.confirmPassword) {
       return
     }
     
     try {
+      setIsRegisterLoading(true)
       await register({
         username: regData.username,
         email: regData.email,
@@ -68,7 +82,18 @@ export default function LoginPage() {
       })
     } catch (error) {
       // Error is handled by the auth context
+    } finally {
+      setIsRegisterLoading(false)
     }
+  }
+
+  // Don't show login form until auth is initialized (avoids flash when refresh token restores session)
+  if (!isInitialized) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
+      </div>
+    )
   }
 
   return (
@@ -79,7 +104,7 @@ export default function LoginPage() {
           <div className="mx-auto w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg mb-4">
             <Package className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Sinha Knit Industries Ltd.</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">XYZ Knit Industries Limited</h1>
           <p className="text-sm text-gray-600 dark:text-gray-400">Fabric Inventory Management System</p>
         </div>
 
@@ -143,16 +168,16 @@ export default function LoginPage() {
 
                   <Button 
                     type="submit" 
-                    className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all duration-200" 
-                    disabled={isLoading}
+                    className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out" 
+                    disabled={isLoginLoading}
                   >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
+                    {isLoginLoading ? (
+                      <div className="flex items-center gap-2 transition-opacity duration-200">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                         <span>Signing in...</span>
                       </div>
                     ) : (
-                      "Sign In"
+                      <span className="transition-opacity duration-200">Sign In</span>
                     )}
                   </Button>
                 </form>
@@ -261,18 +286,18 @@ export default function LoginPage() {
 
                   <Button 
                     type="submit" 
-                    className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all duration-200" 
-                    disabled={isLoading || regData.password !== regData.confirmPassword}
+                    className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out" 
+                    disabled={isRegisterLoading || regData.password !== regData.confirmPassword}
                   >
-                    {isLoading ? (
-                      <div className="flex items-center gap-2">
+                    {isRegisterLoading ? (
+                      <div className="flex items-center gap-2 transition-opacity duration-200">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        Creating account...
+                        <span>Creating account...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 transition-opacity duration-200">
                         <UserPlus className="h-4 w-4" />
-                        Create Account
+                        <span>Create Account</span>
                       </div>
                     )}
                   </Button>
@@ -283,7 +308,7 @@ export default function LoginPage() {
             {!isRegisterMode && (
               <div className="mt-6 text-center text-sm text-muted-foreground">
                 <p>Demo credentials:</p>
-                <p className="font-mono text-xs">admin@sinhaknit.com / admin123</p>
+                <p className="font-mono text-xs">superadmin@fabriventory.com / SuperAdmin@123</p>
               </div>
             )}
           </CardContent>
