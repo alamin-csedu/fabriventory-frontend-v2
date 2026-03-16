@@ -51,7 +51,8 @@ export function EditBuyerDialog({ buyer, open, onOpenChange, onSuccess }: EditBu
 
     try {
       // API call to update buyer
-      const response = await fetch(`http://localhost:8080/api/v1/buyers/${buyer.id}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/buyers/${buyer.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

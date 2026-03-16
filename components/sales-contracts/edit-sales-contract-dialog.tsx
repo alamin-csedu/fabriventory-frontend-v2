@@ -82,7 +82,8 @@ export function EditSalesContractDialog({ contract, open, onOpenChange, onSucces
 
     try {
       // API call to update sales contract
-      const response = await fetch(`http://localhost:8080/api/v1/sales-contracts/${contract.id}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/sales-contracts/${contract.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

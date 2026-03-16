@@ -52,7 +52,8 @@ export function EditSupplierDialog({ supplier, open, onOpenChange, onSuccess }: 
 
     try {
       // API call to update supplier
-      const response = await fetch(`http://localhost:8080/api/v1/suppliers/${supplier.id}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/suppliers/${supplier.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -65,7 +65,8 @@ export function AddPurchaseInvoiceDialog({ open, onOpenChange }: AddPurchaseInvo
 
     try {
       // API call to create purchase invoice
-      const response = await fetch("http://localhost:8080/api/v1/purchase-invoices", {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/purchase-invoices`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
