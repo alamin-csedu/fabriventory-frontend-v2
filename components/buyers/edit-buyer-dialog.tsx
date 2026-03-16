@@ -51,7 +51,8 @@ export function EditBuyerDialog({ buyer, open, onOpenChange, onSuccess }: EditBu
 
     try {
       // API call to update buyer
-      const response = await fetch(`http://localhost:8080/api/v1/buyers/${buyer.id}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/buyers/${buyer.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -81,7 +82,7 @@ export function EditBuyerDialog({ buyer, open, onOpenChange, onSuccess }: EditBu
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Buyer</DialogTitle>
           <DialogDescription>Update the buyer information in your fabric inventory system.</DialogDescription>

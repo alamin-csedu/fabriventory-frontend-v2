@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { DM_Sans } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
-import { ThemeProvider } from "@/components/theme-provider"
+import { Providers } from "@/components/providers"
 import { Suspense } from "react"
 import "./globals.css"
 
@@ -13,9 +13,14 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Fabrimentory - Fabric Inventory Management",
+  title: "FABRIVENTORY - Project Inventory Management System",
   description: "Professional fabric inventory management system for garment manufacturing",
   generator: "v0.app",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 }
 
 export default function RootLayout({
@@ -27,9 +32,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${dmSans.variable} antialiased`}>
         <Suspense fallback={null}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <Providers>
             {children}
-          </ThemeProvider>
+          </Providers>
         </Suspense>
         <Analytics />
       </body>

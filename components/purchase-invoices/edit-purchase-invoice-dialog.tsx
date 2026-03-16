@@ -87,7 +87,8 @@ export function EditPurchaseInvoiceDialog({ invoice, open, onOpenChange, onSucce
 
     try {
       // API call to update purchase invoice
-      const response = await fetch(`http://localhost:8080/api/v1/purchase-invoices/${invoice.id}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/purchase-invoices/${invoice.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -121,7 +122,7 @@ export function EditPurchaseInvoiceDialog({ invoice, open, onOpenChange, onSucce
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Purchase Invoice</DialogTitle>
           <DialogDescription>Update the purchase invoice information and details.</DialogDescription>

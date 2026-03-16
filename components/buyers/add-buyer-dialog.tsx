@@ -34,7 +34,8 @@ export function AddBuyerDialog({ open, onOpenChange }: AddBuyerDialogProps) {
 
     try {
       // API call to create buyer
-      const response = await fetch("http://localhost:8080/api/v1/buyers", {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/buyers`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +68,7 @@ export function AddBuyerDialog({ open, onOpenChange }: AddBuyerDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Buyer</DialogTitle>
           <DialogDescription>Create a new buyer profile for your fabric inventory system.</DialogDescription>

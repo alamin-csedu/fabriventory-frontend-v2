@@ -2,36 +2,29 @@
 
 import type React from "react"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 interface AuthGuardProps {
   children: React.ReactNode
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const { isAuthenticated, isInitialized } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    const checkAuth = () => {
-      const auth = localStorage.getItem("fabrimentory_auth")
-      if (auth === "true") {
-        setIsAuthenticated(true)
-      } else {
-        router.push("/login")
-      }
-      setIsLoading(false)
+    if (isInitialized && !isAuthenticated) {
+      router.push("/login")
     }
+  }, [isAuthenticated, isInitialized, router])
 
-    checkAuth()
-  }, [router])
-
-  if (isLoading) {
+  // Show loading until we've checked token (avoids login page flash during refresh)
+  if (!isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-primary border-t-transparent" />
       </div>
     )
   }

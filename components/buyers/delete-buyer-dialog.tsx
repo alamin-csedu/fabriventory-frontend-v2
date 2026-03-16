@@ -38,7 +38,8 @@ export function DeleteBuyerDialog({ buyer, open, onOpenChange, onSuccess }: Dele
 
     try {
       // API call to delete buyer
-      const response = await fetch(`http://localhost:8080/api/v1/buyers/${buyer.id}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/buyers/${buyer.id}`, {
         method: "DELETE",
       })
 

@@ -57,7 +57,8 @@ export function AddSalesContractDialog({ open, onOpenChange }: AddSalesContractD
 
     try {
       // API call to create sales contract
-      const response = await fetch("http://localhost:8080/api/v1/sales-contracts", {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/sales-contracts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -101,7 +102,7 @@ export function AddSalesContractDialog({ open, onOpenChange }: AddSalesContractD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Sales Contract</DialogTitle>
           <DialogDescription>Create a new sales contract with buyer details and specifications.</DialogDescription>

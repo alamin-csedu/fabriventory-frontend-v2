@@ -34,7 +34,8 @@ export function AddSupplierDialog({ open, onOpenChange }: AddSupplierDialogProps
 
     try {
       // API call to create supplier
-      const response = await fetch("http://localhost:8080/api/v1/suppliers", {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/suppliers`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +68,7 @@ export function AddSupplierDialog({ open, onOpenChange }: AddSupplierDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Supplier</DialogTitle>
           <DialogDescription>Create a new supplier profile for your fabric inventory system.</DialogDescription>

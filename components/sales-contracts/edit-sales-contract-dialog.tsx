@@ -82,7 +82,8 @@ export function EditSalesContractDialog({ contract, open, onOpenChange, onSucces
 
     try {
       // API call to update sales contract
-      const response = await fetch(`http://localhost:8080/api/v1/sales-contracts/${contract.id}`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
+      const response = await fetch(`${baseUrl}/sales-contracts/${contract.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -118,7 +119,7 @@ export function EditSalesContractDialog({ contract, open, onOpenChange, onSucces
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Sales Contract</DialogTitle>
           <DialogDescription>Update the sales contract information and specifications.</DialogDescription>
