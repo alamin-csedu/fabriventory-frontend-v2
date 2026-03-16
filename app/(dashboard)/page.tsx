@@ -10,12 +10,12 @@ export default function DashboardPage() {
     <div className="space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-3xl font-bold text-balance">Dashboard</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Dashboard</h1>
             <p className="text-muted-foreground text-pretty">Welcome to your fabric inventory management system</p>
           </div>
 
           {/* Key Metrics - Beautiful Stats Cards */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
             {/* Total Items Card */}
             <Card className="group relative overflow-hidden border-0 bg-gradient-to-br from-blue-500/10 via-blue-600/5 to-indigo-500/10 hover:from-blue-500/20 hover:via-blue-600/10 hover:to-indigo-500/20 transition-all duration-500 hover:scale-105 hover:shadow-xl hover:shadow-blue-500/20">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -103,7 +103,7 @@ export default function DashboardPage() {
 
           {/* Recent Activity & Alerts */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
+            <Card className="md:col-span-1 lg:col-span-4">
               <CardHeader>
                 <CardTitle>Recent Transactions</CardTitle>
                 <CardDescription>Latest inventory movements</CardDescription>
@@ -135,7 +135,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card className="col-span-3">
+            <Card className="md:col-span-1 lg:col-span-3">
               <CardHeader>
                 <CardTitle>Inventory Alerts</CardTitle>
                 <CardDescription>Items requiring attention</CardDescription>

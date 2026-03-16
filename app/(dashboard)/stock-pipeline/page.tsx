@@ -43,9 +43,9 @@ export default function StockLedgerPage() {
   return (
     <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-bold text-balance">Stock Pipeline</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Stock Pipeline</h1>
               <p className="text-muted-foreground text-pretty">Manage booking entries and track their delivery timeline</p>
             </div>
             <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
@@ -55,7 +55,7 @@ export default function StockLedgerPage() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
@@ -112,7 +112,7 @@ export default function StockLedgerPage() {
               <CardDescription>View and manage booking entries - click "Go" to see full timeline</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6">
                 <div className="relative flex-1 max-w-sm">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -123,7 +123,7 @@ export default function StockLedgerPage() {
                   />
                 </div>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Filter by type" />
                   </SelectTrigger>
                   <SelectContent>

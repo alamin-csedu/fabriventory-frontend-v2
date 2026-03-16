@@ -202,9 +202,9 @@ export default function ColorsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Color Management</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Color Management</h1>
           </div>
         </div>
         
@@ -240,9 +240,9 @@ export default function ColorsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Colors Management</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Colors Management</h1>
         </div>
         <Button onClick={() => setIsAddDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
@@ -324,7 +324,7 @@ export default function ColorsPage() {
           
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
               <div className="flex items-center space-x-2">
                 <p className="text-sm text-muted-foreground">
                   Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, totalColors)} of {totalColors} colors

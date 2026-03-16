@@ -61,7 +61,7 @@ export function ViewSupplierDialog({ supplier, open, onOpenChange }: ViewSupplie
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Supplier Details</DialogTitle>
           <DialogDescription>Complete information about this supplier</DialogDescription>

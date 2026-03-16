@@ -121,7 +121,7 @@ export function EditPurchaseInvoiceDialog({ invoice, open, onOpenChange, onSucce
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Purchase Invoice</DialogTitle>
           <DialogDescription>Update the purchase invoice information and details.</DialogDescription>

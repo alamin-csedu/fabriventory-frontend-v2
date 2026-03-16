@@ -45,8 +45,8 @@ export const ColorsTable = ({
 
   if (loading) {
     return (
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border overflow-x-auto">
+        <Table className="min-w-[700px]">
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
@@ -78,8 +78,8 @@ export const ColorsTable = ({
 
   if (!colors || colors.length === 0) {
     return (
-      <div className="rounded-md border">
-        <Table>
+      <div className="rounded-md border overflow-x-auto">
+        <Table className="min-w-[700px]">
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
@@ -104,8 +104,8 @@ export const ColorsTable = ({
   }
 
   return (
-    <div className="rounded-md border">
-      <Table>
+    <div className="rounded-md border overflow-x-auto">
+      <Table className="min-w-[700px]">
         <TableHeader>
           <TableRow>
             <TableHead 

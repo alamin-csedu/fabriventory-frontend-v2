@@ -198,9 +198,9 @@ export default function JobsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-balance">Jobs Management</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Jobs Management</h1>
         </div>
         <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
@@ -297,7 +297,7 @@ export default function JobsPage() {
 
       {/* Pagination */}
       {!tableLoading && totalJobs > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 bg-white rounded-lg border shadow-sm p-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 bg-card rounded-lg border shadow-sm p-3 sm:p-4">
           <div className="text-sm text-gray-500 text-center sm:text-left">
             Showing {((currentPage - 1) * perPage) + 1} to {Math.min(currentPage * perPage, totalJobs)} of {totalJobs} entries
           </div>

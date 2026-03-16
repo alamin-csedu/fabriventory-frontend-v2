@@ -188,10 +188,10 @@ export default function RolesPage() {
   return (
     <SuperAdminGuard>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Role Management</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Role Management</h1>
+            <p className="text-muted-foreground text-sm">
               Manage roles and their permissions for your organization
             </p>
           </div>
@@ -292,8 +292,8 @@ export default function RolesPage() {
               </div>
             </div>
 
-            <div className="rounded-md border">
-              <Table>
+            <div className="rounded-md border overflow-x-auto">
+              <Table className="min-w-[700px]">
                 <TableHeader>
                   <TableRow>
                     <TableHead>Role</TableHead>

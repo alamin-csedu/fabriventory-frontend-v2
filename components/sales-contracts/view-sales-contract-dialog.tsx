@@ -60,7 +60,7 @@ export function ViewSalesContractDialog({ contract, open, onOpenChange }: ViewSa
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Sales Contract Details</DialogTitle>
           <DialogDescription>Complete information about this sales contract</DialogDescription>

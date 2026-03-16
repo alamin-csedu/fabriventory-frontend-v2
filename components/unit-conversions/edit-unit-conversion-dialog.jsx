@@ -89,7 +89,7 @@ export const EditUnitConversionDialog = ({ open, onOpenChange, conversion, onSuc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Unit Conversion</DialogTitle>
           <DialogDescription>
@@ -98,7 +98,7 @@ export const EditUnitConversionDialog = ({ open, onOpenChange, conversion, onSuc
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="from_id">From Unit</Label>
                 <Select
@@ -155,7 +155,7 @@ export const EditUnitConversionDialog = ({ open, onOpenChange, conversion, onSuc
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="factor">Factor</Label>
                 <Input

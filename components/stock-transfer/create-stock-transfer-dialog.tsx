@@ -196,7 +196,7 @@ export function CreateStockTransferDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>New stock transfer</DialogTitle>
           <DialogDescription>
@@ -263,7 +263,7 @@ export function CreateStockTransferDialog({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Amount (quantity) *</Label>
               <Input

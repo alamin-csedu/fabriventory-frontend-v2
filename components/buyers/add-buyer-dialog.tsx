@@ -67,7 +67,7 @@ export function AddBuyerDialog({ open, onOpenChange }: AddBuyerDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Buyer</DialogTitle>
           <DialogDescription>Create a new buyer profile for your fabric inventory system.</DialogDescription>

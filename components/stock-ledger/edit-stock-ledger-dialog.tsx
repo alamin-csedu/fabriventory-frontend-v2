@@ -12,7 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
-import { Eye, ExternalLink, X, Plus, Trash2, Save, Edit } from "lucide-react"
+import { Eye, Plus, Trash2, Save, Edit, X } from "lucide-react"
+import { ImagePreviewModal } from "@/components/ui/image-preview-modal"
 
 interface Job {
   id: number
@@ -562,8 +563,8 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-4 min-w-0 overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
             <div className="space-y-2">
               <Label htmlFor="job_id">Job *</Label>
               <Select 
@@ -649,22 +650,22 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
             <div className="space-y-4">
               <Label htmlFor="delivery_receipt">Delivery Receipt *</Label>
               
-              {/* Current Image Preview */}
+              {/* Current receipt preview */}
               {stockLedger.delivery_receipt_url && !selectedFile && (
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-gray-700">Current Receipt:</div>
+                <div className="space-y-2 min-w-0 max-w-full">
+                  <div className="text-sm font-medium text-gray-700">Preview</div>
                   <div 
-                    className="relative group cursor-pointer rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-300 transition-all duration-200"
+                    className="relative group cursor-pointer rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-300 transition-all duration-200 max-w-full w-full"
                     onClick={() => setShowImageModal(true)}
                   >
                     <img
                       src={
                         stockLedger.delivery_receipt_url.startsWith('http') 
                           ? stockLedger.delivery_receipt_url 
-                          : `${process.env.NEXT_PUBLIC_FILE_URL || 'http://localhost:8080'}${stockLedger.delivery_receipt_url}`
+                          : `https://${stockLedger.delivery_receipt_url}`
                       }
                       alt="Current delivery receipt"
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+                      className="w-full h-48 object-cover object-center max-w-full group-hover:scale-105 transition-transform duration-200"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
@@ -684,7 +685,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-gray-500 truncate min-w-0 max-w-full">
                     {stockLedger.delivery_receipt_url}
                   </p>
                 </div>
@@ -981,92 +982,13 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
         </form>
       </DialogContent>
 
-      {/* Image Preview Modal */}
-      <Dialog open={showImageModal} onOpenChange={setShowImageModal}>
-        <DialogContent className="max-w-6xl max-h-[95vh] p-0 bg-black/95">
-          <div className="relative flex flex-col h-full">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 bg-black/80 text-white">
-              <div className="flex items-center space-x-2">
-                <Eye className="h-5 w-5" />
-                <span className="font-medium">Delivery Receipt Preview</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/20"
-                onClick={() => setShowImageModal(false)}
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            {/* Image Container */}
-            <div className="flex-1 flex items-center justify-center p-4 bg-gray-900">
-              {stockLedger.delivery_receipt_url && (
-                <div className="relative max-w-full max-h-full">
-                  <img
-                    src={
-                      stockLedger.delivery_receipt_url.startsWith('http') 
-                        ? stockLedger.delivery_receipt_url 
-                        : `${process.env.NEXT_PUBLIC_FILE_URL || 'http://localhost:8080'}${stockLedger.delivery_receipt_url}`
-                    }
-                    alt="Delivery Receipt"
-                    className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = document.createElement('div');
-                      fallback.className = 'flex flex-col items-center justify-center h-64 bg-gray-800 rounded-lg text-white p-6';
-                      fallback.innerHTML = `
-                        <div class="text-center">
-                          <Eye className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                          <p class="text-lg font-medium mb-2">Unable to load image</p>
-                          <p class="text-sm text-gray-300 mb-4">This file may not be an image or the URL is invalid</p>
-                          <a href="${stockLedger.delivery_receipt_url?.startsWith('http') 
-                            ? stockLedger.delivery_receipt_url 
-                            : `${process.env.NEXT_PUBLIC_FILE_URL || 'http://localhost:8080'}${stockLedger.delivery_receipt_url}`}" 
-                            target="_blank" 
-                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Open in new tab
-                          </a>
-                        </div>
-                      `;
-                      target.parentNode?.insertBefore(fallback, target.nextSibling);
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 bg-black/80 text-white border-t border-gray-700">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-300 truncate max-w-md">
-                  {stockLedger.delivery_receipt_url}
-                </div>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-white border-gray-600 hover:bg-white/10"
-                    onClick={() => {
-                      const fullUrl = stockLedger.delivery_receipt_url?.startsWith('http') 
-                        ? stockLedger.delivery_receipt_url 
-                        : `${process.env.NEXT_PUBLIC_FILE_URL || 'http://localhost:8080'}${stockLedger.delivery_receipt_url}`
-                      window.open(fullUrl, '_blank')
-                    }}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Open Original
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {stockLedger.delivery_receipt_url && (
+        <ImagePreviewModal
+          imageUrl={stockLedger.delivery_receipt_url}
+          open={showImageModal}
+          onOpenChange={setShowImageModal}
+        />
+      )}
     </Dialog>
   )
 }

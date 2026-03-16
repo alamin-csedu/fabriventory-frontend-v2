@@ -181,7 +181,7 @@ export function StockLedgerItemsDialog({ stockLedgerId, open, onOpenChange }: St
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Stock Ledger Items</DialogTitle>
           <DialogDescription>
@@ -203,7 +203,7 @@ export function StockLedgerItemsDialog({ stockLedgerId, open, onOpenChange }: St
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

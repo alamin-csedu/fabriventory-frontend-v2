@@ -126,7 +126,8 @@ export function StockTransferTable({
 
   return (
     <>
-      <Table>
+      <div className="rounded-md border overflow-x-auto">
+      <Table className="min-w-[700px]">
         <TableHeader>
           <TableRow className="bg-muted/50 hover:bg-muted/50">
             <TableHead className="font-semibold">#</TableHead>
@@ -208,6 +209,7 @@ export function StockTransferTable({
           )}
         </TableBody>
       </Table>
+      </div>
 
       {editId != null && (
         <EditStockTransferDialog

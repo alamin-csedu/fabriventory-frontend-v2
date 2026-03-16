@@ -203,7 +203,7 @@ export default function StocksPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-balance">Stocks</h1>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Stocks</h1>
         <p className="text-muted-foreground text-pretty">
           View stock grouped by items or by storage, with pagination and filters
         </p>
@@ -262,7 +262,7 @@ export default function StocksPage() {
                 placeholder="All items"
                 searchPlaceholder="Search items..."
                 emptyText="No item found."
-                className="w-[200px]"
+                className="w-full sm:w-[200px]"
               />
             )}
             {groupBy === "storage" && (
@@ -276,7 +276,7 @@ export default function StocksPage() {
                 placeholder="All storages"
                 searchPlaceholder="Search storages..."
                 emptyText="No storage found."
-                className="w-[200px]"
+                className="w-full sm:w-[200px]"
               />
             )}
           </div>
@@ -287,9 +287,9 @@ export default function StocksPage() {
             </div>
           ) : (
             <>
-              <div className="rounded-md border overflow-hidden">
+              <div className="rounded-md border overflow-x-auto">
                 {groupBy === "item" ? (
-                  <Table className="table-fixed">
+                  <Table className="min-w-[600px]">
                     <TableHeader>
                       <TableRow className="border-b bg-muted/50 hover:bg-muted/50">
                         <TableHead className="w-12 px-3 py-3 font-semibold" />
@@ -421,7 +421,7 @@ export default function StocksPage() {
                     </TableBody>
                   </Table>
                 ) : (
-                  <Table className="table-fixed">
+                  <Table className="min-w-[600px]">
                     <TableHeader>
                       <TableRow className="border-b bg-muted/50 hover:bg-muted/50">
                         <TableHead className="w-12 px-3 py-3 font-semibold" />
@@ -538,13 +538,13 @@ export default function StocksPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
-                <div className="flex-1 flex justify-start">
+                <div className="w-full sm:w-auto sm:flex-1 flex justify-center sm:justify-start">
                   <p className="text-sm text-muted-foreground whitespace-nowrap">
                     Showing {from} to {to} of {total}{" "}
                     {groupBy === "item" ? "items" : "storages"}
                   </p>
                 </div>
-                <div className="flex-1 flex justify-center">
+                <div className="w-full sm:w-auto sm:flex-1 flex justify-center">
                   {total > 0 && (
                     <Pagination>
                     <PaginationContent>
@@ -618,7 +618,7 @@ export default function StocksPage() {
                   </Pagination>
                   )}
                 </div>
-                <div className="flex-1 flex justify-end items-center gap-2">
+                <div className="w-full sm:w-auto sm:flex-1 flex justify-center sm:justify-end items-center gap-2">
                   <span className="text-sm text-muted-foreground whitespace-nowrap">
                     Per page:
                   </span>

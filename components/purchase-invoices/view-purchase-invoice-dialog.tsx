@@ -60,7 +60,7 @@ export function ViewPurchaseInvoiceDialog({ invoice, open, onOpenChange }: ViewP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Purchase Invoice Details</DialogTitle>
           <DialogDescription>Complete information about this purchase invoice</DialogDescription>

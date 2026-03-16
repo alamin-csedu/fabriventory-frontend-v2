@@ -449,7 +449,7 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="job_id">Job *</Label>
               <Select 
@@ -543,7 +543,7 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
                 <h3 className="text-lg font-semibold mb-4">Stock Ledger Items</h3>
                 
                 {/* Items table */}
-                <div className="rounded-md border">
+                <div className="rounded-md border overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -683,7 +683,7 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
                 </p>
                 
                 {/* Delivery items table */}
-                <div className="rounded-md border">
+                <div className="rounded-md border overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>

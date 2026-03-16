@@ -288,10 +288,10 @@ export function DashboardLayout({ children }) {
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <header className="flex h-16 items-center gap-4 border-b px-6">
+        <header className="flex h-14 sm:h-16 items-center gap-2 sm:gap-4 border-b px-3 sm:px-6">
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="lg:hidden bg-transparent">
+              <Button variant="outline" size="icon" className="lg:hidden bg-transparent shrink-0">
                 <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
@@ -301,26 +301,26 @@ export function DashboardLayout({ children }) {
           </Sheet>
 
           {/* Company Information */}
-          <div className="flex-1 flex flex-col justify-center ml-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center shadow-sm">
-                <Building2 className="w-5 h-5 text-white" />
+          <div className="flex-1 flex flex-col justify-center ml-1 sm:ml-4 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+                <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div>
-                <h1 className="font-bold text-3xl text-foreground tracking-tight">XYZ Knit Industries Limited</h1>
-                <p className="text-[13px] text-muted-foreground font-medium">Chamurkhan, Uttarkhan, Uttara, Dhaka-1230</p>
+              <div className="min-w-0">
+                <h1 className="font-bold text-sm sm:text-xl lg:text-3xl text-foreground tracking-tight truncate">XYZ Knit Industries Limited</h1>
+                <p className="text-[10px] sm:text-[13px] text-muted-foreground font-medium truncate hidden sm:block">Chamurkhan, Uttarkhan, Uttara, Dhaka-1230</p>
               </div>
             </div>
           </div>
 
           {/* Theme Toggle */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <ThemeToggle />
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6">{children}</main>
       </div>
     </div>
   )

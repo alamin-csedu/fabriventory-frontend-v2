@@ -101,7 +101,7 @@ export function AddSalesContractDialog({ open, onOpenChange }: AddSalesContractD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Sales Contract</DialogTitle>
           <DialogDescription>Create a new sales contract with buyer details and specifications.</DialogDescription>

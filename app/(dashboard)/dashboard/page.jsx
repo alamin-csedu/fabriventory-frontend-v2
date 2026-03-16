@@ -109,9 +109,9 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-balance">Dashboard Overview</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Dashboard Overview</h1>
           <p className="text-muted-foreground text-pretty">
             System statistics and analytics for Fabriventory
           </p>
@@ -373,7 +373,7 @@ export default function DashboardPage() {
           <CardDescription>Complete system statistics and metrics</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{formatNumber(stats.total_categories)}</div>
               <p className="text-sm text-muted-foreground">Categories</p>

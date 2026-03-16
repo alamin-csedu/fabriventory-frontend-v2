@@ -100,25 +100,25 @@ export default function StockLedgerTimelinePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 sm:gap-4">
           <Button
             variant="outline"
             size="sm"
             onClick={() => router.back()}
-            className="gap-2"
+            className="gap-2 shrink-0"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back
+            <span className="hidden sm:inline">Back</span>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-balance">Stock Ledger Timeline</h1>
-            <p className="text-muted-foreground text-pretty">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Stock Ledger Timeline</h1>
+            <p className="text-muted-foreground text-pretty text-sm">
               {bookingEntry?.job?.name || "Timeline Details"}
             </p>
           </div>
         </div>
-        <Button onClick={handleAddDelivery} className="gap-2">
+        <Button onClick={handleAddDelivery} className="gap-2 shrink-0">
           <Plus className="h-4 w-4" />
           Add Delivery
         </Button>
@@ -166,7 +166,7 @@ export default function StockLedgerTimelinePage() {
               <div className="mt-6">
                 <h4 className="font-semibold mb-3">Item Delivery Status</h4>
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
+                  <table className="w-full border-collapse min-w-[700px]">
                     <thead>
                       <tr className="border-b">
                         <th className="text-left py-3 px-4 font-semibold text-sm">Item</th>
@@ -268,13 +268,13 @@ export default function StockLedgerTimelinePage() {
                   {index < deliveryEntries.length - 1 && (
                     <div className="absolute left-6 top-12 w-0.5 h-8 bg-border" />
                   )}
-                  <div className="flex items-start gap-4 p-4 rounded-lg border bg-card">
-                    <div className="flex-shrink-0 w-12 h-12 rounded-full bg-background border-2 border-primary flex items-center justify-center">
+                    <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border bg-card">
+                    <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-background border-2 border-primary flex items-center justify-center">
                       {getStatusIcon(entry.type, index)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">Delivered on {formatDate(entry.created_at)}</h4>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                        <h4 className="font-semibold text-sm sm:text-base">Delivered on {formatDate(entry.created_at)}</h4>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className={getStatusColor(entry.type)}>
                             {entry.type}

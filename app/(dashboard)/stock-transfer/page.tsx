@@ -52,9 +52,9 @@ export default function StockTransferPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-balance">Stock Transfer</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Stock Transfer</h1>
         </div>
         <Button onClick={() => setAddOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
@@ -85,7 +85,7 @@ export default function StockTransferPage() {
               placeholder="Transfer #"
               value={transferNo}
               onChange={(e) => setTransferNo(e.target.value)}
-              className="w-[160px]"
+              className="w-full sm:w-[160px]"
             />
             <Combobox
               options={[{ value: "all", label: "All items" }, ...items.map((i) => ({ value: String(i.id), label: i.name }))]}
@@ -94,7 +94,7 @@ export default function StockTransferPage() {
               placeholder="All items"
               searchPlaceholder="Search items..."
               emptyText="No item found."
-              className="w-[200px]"
+              className="w-full sm:w-[200px]"
             />
           </div>
 

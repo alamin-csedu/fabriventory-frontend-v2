@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Eye } from "lucide-react"
+import { ImagePreviewModal } from "@/components/ui/image-preview-modal"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 import { StockLedgerItemsDialog } from "./stock-ledger-items-dialog"
@@ -80,6 +82,7 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
   const [loading, setLoading] = useState(false)
   const [stockLedgerItems, setStockLedgerItems] = useState<StockLedgerItem[]>([])
   const [isItemsDialogOpen, setIsItemsDialogOpen] = useState(false)
+  const [showImageModal, setShowImageModal] = useState(false)
 
   const fetchStockLedgerItems = async () => {
     if (!stockLedger) return
@@ -129,7 +132,7 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Stock Ledger Details</DialogTitle>
           <DialogDescription>
@@ -137,11 +140,11 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0 overflow-hidden">
           {/* Basic Information */}
-          <div className="space-y-4">
+          <div className="space-y-4 min-w-0">
             <h3 className="text-lg font-semibold">Basic Information</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">ID</label>
                 <p className="text-sm">#{stockLedger.id}</p>
@@ -171,17 +174,55 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
             </div>
             
             {stockLedger.delivery_receipt_url && (
-              <div>
+              <div className="space-y-2 min-w-0 max-w-full">
                 <label className="text-sm font-medium text-muted-foreground">Delivery Receipt</label>
-                <div className="mt-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.open(stockLedger.delivery_receipt_url!, '_blank')}
-                  >
-                    View Receipt
-                  </Button>
+                <div className="text-sm font-medium text-gray-700">Preview</div>
+                <div
+                  className="relative group cursor-pointer rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-300 transition-all duration-200 max-w-full w-full"
+                  onClick={() => setShowImageModal(true)}
+                >
+                  <img
+                    src={
+                      stockLedger.delivery_receipt_url.startsWith("http")
+                        ? stockLedger.delivery_receipt_url
+                        : `https://${stockLedger.delivery_receipt_url}`
+                    }
+                    alt="Delivery receipt"
+                    className="w-full h-48 object-cover object-center max-w-full group-hover:scale-105 transition-transform duration-200"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.style.display = "none"
+                      const fallback = target.parentElement?.querySelector(".fallback") as HTMLElement
+                      if (fallback) fallback.style.display = "flex"
+                    }}
+                  />
+                  <div className="fallback hidden absolute inset-0 bg-gray-100 flex items-center justify-center">
+                    <div className="text-center text-gray-500">
+                      <Eye className="h-8 w-8 mx-auto mb-2" />
+                      <p className="text-sm">Click to view full image</p>
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/90 rounded-full p-2">
+                      <Eye className="h-5 w-5 text-gray-700" />
+                    </div>
+                  </div>
                 </div>
+                <p className="text-xs text-gray-500 truncate min-w-0 max-w-full">
+                  {stockLedger.delivery_receipt_url}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-fit"
+                  onClick={() => {
+                    const raw = stockLedger.delivery_receipt_url!
+                    const url = raw.startsWith("http") ? raw : `https://${raw}`
+                    window.open(url, "_blank")
+                  }}
+                >
+                  View Receipt
+                </Button>
               </div>
             )}
           </div>
@@ -191,7 +232,7 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
           {/* Timestamps */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Timestamps</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground">Created At</label>
                 <p className="text-sm">{formatDate(stockLedger.created_at)}</p>
@@ -224,7 +265,7 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
             ) : stockLedgerItems.length === 0 ? (
               <p className="text-sm text-muted-foreground">No items found for this stock ledger.</p>
             ) : (
-              <div className="rounded-md border">
+              <div className="rounded-md border overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -256,6 +297,14 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
           </div>
         </div>
       </DialogContent>
+
+      {stockLedger?.delivery_receipt_url && (
+        <ImagePreviewModal
+          imageUrl={stockLedger.delivery_receipt_url}
+          open={showImageModal}
+          onOpenChange={setShowImageModal}
+        />
+      )}
 
       <StockLedgerItemsDialog
         stockLedgerId={stockLedger?.id || null}
