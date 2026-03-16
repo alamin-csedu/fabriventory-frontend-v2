@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build && node scripts/fix-dashboard-manifest.cjs",
+    "build": "next build",
     "dev": "next dev -p 3900",
     "lint": "next lint",
     "start": "next start -p 3900"
