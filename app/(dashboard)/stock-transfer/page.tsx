@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { StockTransferTable } from "@/components/stock-transfer/stock-transfer-table"
 import { CreateStockTransferDialog } from "@/components/stock-transfer/create-stock-transfer-dialog"
+import { OpenModalFromAction } from "@/components/open-modal-from-action"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -52,9 +53,10 @@ export default function StockTransferPage() {
 
   return (
     <div className="space-y-6">
+      <OpenModalFromAction action="add-transfer" onOpen={() => setAddOpen(true)} />
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Stock Transfer</h1>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Transfers</h1>
         </div>
         <Button onClick={() => setAddOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />

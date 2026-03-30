@@ -2,6 +2,7 @@
 
 import { SalesContractsTable } from "@/components/sales-contracts/sales-contracts-table"
 import { AddSalesContractDialog } from "@/components/sales-contracts/add-sales-contract-dialog"
+import { OpenModalFromAction } from "@/components/open-modal-from-action"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,11 +17,12 @@ export default function SalesContractsPage() {
 
   return (
     <div className="space-y-6">
+          <OpenModalFromAction action="add-order" onOpen={() => setIsAddDialogOpen(true)} />
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Sales Contracts</h1>
-              <p className="text-muted-foreground text-pretty">Manage sales contracts and buyer agreements</p>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Orders</h1>
+              <p className="text-muted-foreground text-pretty">Manage orders and buyer agreements</p>
             </div>
             <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
               <Plus className="h-4 w-4" />
@@ -82,8 +84,8 @@ export default function SalesContractsPage() {
           {/* Search and Filters */}
           <Card>
             <CardHeader>
-              <CardTitle>Sales Contracts</CardTitle>
-              <CardDescription>View and manage all sales contracts with buyers</CardDescription>
+              <CardTitle>Orders</CardTitle>
+              <CardDescription>View and manage all orders with buyers</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6">
