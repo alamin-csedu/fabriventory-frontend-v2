@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/pagination"
 import { Plus, Search, Package, TrendingUp, Tag } from "lucide-react"
 import { useState, useEffect } from "react"
+import { OpenModalFromAction } from "@/components/open-modal-from-action"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -192,11 +193,17 @@ export default function ItemsPage() {
 
   // Show full page skeleton on initial load
   if (loading && !debouncedSearchTerm) {
-    return <ItemsPageSkeleton />
+    return (
+      <>
+        <OpenModalFromAction action="add-item" onOpen={() => setIsAddDialogOpen(true)} />
+        <ItemsPageSkeleton />
+      </>
+    )
   }
 
   return (
     <div className="space-y-6">
+      <OpenModalFromAction action="add-item" onOpen={() => setIsAddDialogOpen(true)} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>

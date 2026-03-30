@@ -10,7 +10,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
           {/* Header */}
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Dashboard</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Home</h1>
             <p className="text-muted-foreground text-pretty">Welcome to your fabric inventory management system</p>
           </div>
 

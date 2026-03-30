@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/pagination"
 import { Plus, Search, FileText, TrendingUp, Users } from "lucide-react"
 import { useState, useEffect } from "react"
+import { OpenModalFromAction } from "@/components/open-modal-from-action"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -192,11 +193,17 @@ export default function JobsPage() {
 
   // Show full page skeleton on initial load
   if (loading && !debouncedSearchTerm) {
-    return <JobsPageSkeleton />
+    return (
+      <>
+        <OpenModalFromAction action="add-job" onOpen={() => setIsAddDialogOpen(true)} />
+        <JobsPageSkeleton />
+      </>
+    )
   }
 
   return (
     <div className="space-y-6">
+      <OpenModalFromAction action="add-job" onOpen={() => setIsAddDialogOpen(true)} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
