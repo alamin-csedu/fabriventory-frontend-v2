@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/pagination"
 import { Plus, Search, Building2, TrendingUp, DollarSign } from "lucide-react"
 import { useState, useEffect } from "react"
+import { OpenModalFromAction } from "@/components/open-modal-from-action"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -194,11 +195,17 @@ export default function VendorsPage() {
 
   // Show full page skeleton on initial load
   if (loading && !debouncedSearchTerm) {
-    return <VendorsPageSkeleton />
+    return (
+      <>
+        <OpenModalFromAction action="add-vendor" onOpen={() => setIsAddDialogOpen(true)} />
+        <VendorsPageSkeleton />
+      </>
+    )
   }
 
   return (
     <div className="space-y-6">
+      <OpenModalFromAction action="add-vendor" onOpen={() => setIsAddDialogOpen(true)} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
