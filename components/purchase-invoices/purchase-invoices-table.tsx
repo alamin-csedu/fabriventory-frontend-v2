@@ -195,7 +195,11 @@ export function PurchaseInvoicesTable({ searchTerm, statusFilter }: PurchaseInvo
               </TableRow>
             ) : (
               filteredInvoices.map((invoice) => (
-                <TableRow key={invoice.id}>
+                <TableRow
+                  key={invoice.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleView(invoice)}
+                >
                   <TableCell className="font-medium font-mono text-sm">{invoice.piNo}</TableCell>
                   <TableCell>{invoice.supplierName}</TableCell>
                   <TableCell>{invoice.piQty.toLocaleString()}</TableCell>
@@ -203,7 +207,7 @@ export function PurchaseInvoicesTable({ searchTerm, statusFilter }: PurchaseInvo
                   <TableCell>{formatCurrency(invoice.totalValue)}</TableCell>
                   <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                   <TableCell>{formatDate(invoice.createdAt)}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">

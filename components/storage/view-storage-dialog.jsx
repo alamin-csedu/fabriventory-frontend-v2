@@ -66,13 +66,15 @@ export function ViewStorageDialog({ storage, open, onOpenChange }) {
                 </div>
               )}
               
+              {storage.parent_id != null && (
               <div className="flex items-center gap-3">
                 <Hash className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Parent Location ID</p>
-                  <p className="text-sm text-muted-foreground">{storage.parent_id || "Main Location"}</p>
+                  <p className="text-sm font-medium">Parent location</p>
+                  <p className="text-sm text-muted-foreground">Sub-location</p>
                 </div>
               </div>
+              )}
             </div>
           </div>
 
@@ -81,30 +83,12 @@ export function ViewStorageDialog({ storage, open, onOpenChange }) {
             <h3 className="text-lg font-semibold">System Information</h3>
             <div className="grid gap-4">
               <div className="flex items-center gap-3">
-                <Hash className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Storage ID</p>
-                  <p className="text-sm text-muted-foreground">#{storage.id}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Created</p>
                   <p className="text-sm text-muted-foreground">{formatDate(storage.created_at)}</p>
                 </div>
               </div>
-              
-              {storage.updated_at && storage.updated_at !== storage.created_at && (
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Last Updated</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(storage.updated_at)}</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

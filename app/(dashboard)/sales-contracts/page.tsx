@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Search, FileText, TrendingUp, Clock, CheckCircle } from "lucide-react"
+import { Plus, Search } from "lucide-react"
 import { useState } from "react"
 
 export default function SalesContractsPage() {
@@ -20,72 +20,17 @@ export default function SalesContractsPage() {
           <OpenModalFromAction action="add-order" onOpen={() => setIsAddDialogOpen(true)} />
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Orders</h1>
-              <p className="text-muted-foreground text-pretty">Manage orders and buyer agreements</p>
-            </div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-balance">Orders</h1>
             <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
               <Plus className="h-4 w-4" />
               Add Contract
             </Button>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Contracts</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">156</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+12</span> new this month
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Contracts</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">89</div>
-                <p className="text-xs text-muted-foreground">Currently in progress</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">23</div>
-                <p className="text-xs text-muted-foreground">Awaiting review</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Contract Value</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">$3.2M</div>
-                <p className="text-xs text-muted-foreground">
-                  <span className="text-primary">+18%</span> from last month
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Search and Filters */}
           <Card>
             <CardHeader>
               <CardTitle>Orders</CardTitle>
-              <CardDescription>View and manage all orders with buyers</CardDescription>
+              <CardDescription>Click a row to view order details</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-6">

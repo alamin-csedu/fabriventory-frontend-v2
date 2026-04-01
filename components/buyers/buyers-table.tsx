@@ -145,7 +145,11 @@ export function BuyersTable({ searchTerm }: BuyersTableProps) {
               </TableRow>
             ) : (
               filteredBuyers.map((buyer) => (
-                <TableRow key={buyer.id}>
+                <TableRow
+                  key={buyer.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleView(buyer)}
+                >
                   <TableCell className="font-medium">{buyer.name}</TableCell>
                   <TableCell>
                     <Badge variant={buyer.status === "active" ? "default" : "secondary"}>{buyer.status}</Badge>
@@ -153,7 +157,7 @@ export function BuyersTable({ searchTerm }: BuyersTableProps) {
                   <TableCell>{buyer.contractsCount}</TableCell>
                   <TableCell>{formatCurrency(buyer.totalValue)}</TableCell>
                   <TableCell>{formatDate(buyer.createdAt)}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">

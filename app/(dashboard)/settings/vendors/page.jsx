@@ -5,9 +5,9 @@ import { AddVendorDialog } from "@/components/vendors/add-vendor-dialog"
 import { EditVendorDialog } from "@/components/vendors/edit-vendor-dialog"
 import { DeleteVendorDialog } from "@/components/vendors/delete-vendor-dialog"
 import { ViewVendorDialog } from "@/components/vendors/view-vendor-dialog"
-import { VendorsPageSkeleton, VendorsTableSkeleton, StatsCardsSkeleton } from "@/components/vendors/vendors-page-skeleton"
+import { VendorsPageSkeleton, VendorsTableSkeleton } from "@/components/vendors/vendors-page-skeleton"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { 
   Pagination, 
@@ -17,8 +17,8 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, Building2, TrendingUp, DollarSign } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Plus, Search } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { OpenModalFromAction } from "@/components/open-modal-from-action"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
@@ -31,12 +31,8 @@ export default function VendorsPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedVendor, setSelectedVendor] = useState(null)
   const [vendors, setVendors] = useState([])
-  const [stats, setStats] = useState({
-    totalVendors: 0,
-    activeVendors: 0,
-    totalValue: 0
-  })
   const [loading, setLoading] = useState(true)
+  const initialLoadDone = useRef(false)
   const [tableLoading, setTableLoading] = useState(false)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
@@ -51,6 +47,9 @@ export default function VendorsPage() {
   // Centralized API functions
   const fetchVendors = async () => {
     try {
+      if (!initialLoadDone.current) {
+        setLoading(true)
+      }
       const response = await apiService.getVendors({
         page: currentPage,
         size: perPage,
@@ -74,27 +73,10 @@ export default function VendorsPage() {
     } finally {
       setTableLoading(false)
       setIsSearching(false)
-    }
-  }
-  
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true)
-      const response = await apiService.getVendors({ page: 1, size: 10 })
-      
-      if (response.data?.data) {
-        const vendors = response.data.data
-        setStats({
-          totalVendors: vendors.length,
-          activeVendors: vendors.length, // All vendors are considered active for now
-          totalValue: 0 // This would need to be calculated from purchase invoices
-        })
+      if (!initialLoadDone.current) {
+        setLoading(false)
+        initialLoadDone.current = true
       }
-    } catch (error) {
-      console.error('Error fetching vendor stats:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -104,7 +86,6 @@ export default function VendorsPage() {
       toast.success("Vendor created successfully")
       setIsAddDialogOpen(false)
       await fetchVendors()
-      await fetchStats()
     } catch (error) {
       console.error('Error creating vendor:', error)
       toast.error("Failed to create vendor. Please try again.")
@@ -119,7 +100,6 @@ export default function VendorsPage() {
       setIsEditDialogOpen(false)
       setSelectedVendor(null)
       await fetchVendors()
-      await fetchStats()
     } catch (error) {
       console.error('Error updating vendor:', error)
       toast.error("Failed to update vendor. Please try again.")
@@ -134,7 +114,6 @@ export default function VendorsPage() {
       setIsDeleteDialogOpen(false)
       setSelectedVendor(null)
       await fetchVendors()
-      await fetchStats()
     } catch (error) {
       console.error('Error deleting vendor:', error)
       toast.error("Failed to delete vendor. Please try again.")
@@ -160,12 +139,7 @@ export default function VendorsPage() {
     fetchVendors()
   }, [debouncedSearchTerm, currentPage, perPage, sorting.sortBy, sorting.sortOrder])
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
   const handleRefresh = () => {
-    fetchStats()
     fetchVendors()
   }
 
@@ -216,58 +190,6 @@ export default function VendorsPage() {
           Add Vendor
         </Button>
       </div>
-
-      {/* Stats Cards */}
-      {loading ? (
-        <StatsCardsSkeleton />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Vendors</CardTitle>
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalVendors}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Active</span> suppliers
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Vendors</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.activeVendors}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Currently</span> active
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Purchases</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                $0
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">This month</span>
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Search and Filters */}
       <Card>

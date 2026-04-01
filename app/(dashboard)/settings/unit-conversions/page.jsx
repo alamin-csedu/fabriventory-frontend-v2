@@ -5,8 +5,9 @@ import { AddUnitConversionDialog } from "@/components/unit-conversions/add-unit-
 import { EditUnitConversionDialog } from "@/components/unit-conversions/edit-unit-conversion-dialog"
 import { DeleteUnitConversionDialog } from "@/components/unit-conversions/delete-unit-conversion-dialog"
 import { ViewUnitConversionDialog } from "@/components/unit-conversions/view-unit-conversion-dialog"
+import { SettingsListPageSkeleton } from "@/components/settings/settings-list-page-skeleton"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { 
   Pagination, 
@@ -16,8 +17,8 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, ArrowRightLeft, TrendingUp, Calculator } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Plus, Search } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -29,12 +30,8 @@ export default function UnitConversionsPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedConversion, setSelectedConversion] = useState(null)
   const [conversions, setConversions] = useState([])
-  const [stats, setStats] = useState({
-    totalConversions: 0,
-    activeConversions: 0,
-    totalRules: 0
-  })
   const [loading, setLoading] = useState(true)
+  const initialLoadDone = useRef(false)
   const [tableLoading, setTableLoading] = useState(false)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
@@ -49,6 +46,9 @@ export default function UnitConversionsPage() {
   // Centralized API functions
   const fetchConversions = async () => {
     try {
+      if (!initialLoadDone.current) {
+        setLoading(true)
+      }
       const response = await apiService.getUnitConversions({
         page: currentPage,
         size: perPage,
@@ -72,26 +72,10 @@ export default function UnitConversionsPage() {
     } finally {
       setTableLoading(false)
       setIsSearching(false)
-    }
-  }
-  
-  const fetchStats = async () => {
-    try {
-      setLoading(true)
-      const response = await apiService.getUnitConversions({ page: 1, size: 10 })
-      
-      if (response.data?.data) {
-        const conversions = response.data.data
-        setStats({
-          totalConversions: conversions.length,
-          activeConversions: conversions.length, // All conversions are considered active for now
-          totalRules: conversions.length // This would need to be calculated from usage
-        })
+      if (!initialLoadDone.current) {
+        setLoading(false)
+        initialLoadDone.current = true
       }
-    } catch (error) {
-      console.error('Error fetching unit conversion stats:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -101,7 +85,6 @@ export default function UnitConversionsPage() {
       toast.success("Unit conversion created successfully")
       setIsAddDialogOpen(false)
       await fetchConversions()
-      await fetchStats()
     } catch (error) {
       console.error('Error creating unit conversion:', error)
       toast.error("Failed to create unit conversion. Please try again.")
@@ -116,7 +99,6 @@ export default function UnitConversionsPage() {
       setIsEditDialogOpen(false)
       setSelectedConversion(null)
       await fetchConversions()
-      await fetchStats()
     } catch (error) {
       console.error('Error updating unit conversion:', error)
       toast.error("Failed to update unit conversion. Please try again.")
@@ -131,7 +113,6 @@ export default function UnitConversionsPage() {
       setIsDeleteDialogOpen(false)
       setSelectedConversion(null)
       await fetchConversions()
-      await fetchStats()
     } catch (error) {
       console.error('Error deleting unit conversion:', error)
       toast.error("Failed to delete unit conversion. Please try again.")
@@ -157,12 +138,7 @@ export default function UnitConversionsPage() {
     fetchConversions()
   }, [debouncedSearchTerm, currentPage, perPage, sorting.sortBy, sorting.sortOrder])
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
   const handleRefresh = () => {
-    fetchStats()
     fetchConversions()
   }
 
@@ -189,6 +165,10 @@ export default function UnitConversionsPage() {
     setIsViewDialogOpen(true)
   }
 
+  if (loading && !debouncedSearchTerm) {
+    return <SettingsListPageSkeleton />
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -201,71 +181,6 @@ export default function UnitConversionsPage() {
           Add Conversion
         </Button>
       </div>
-
-      {/* Stats Cards */}
-      {loading ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-2"></div>
-                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Conversions</CardTitle>
-              <ArrowRightLeft className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalConversions}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Available</span> conversions
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Conversions</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.activeConversions}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Currently</span> in use
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Rules</CardTitle>
-              <Calculator className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalRules}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Conversion</span> rules
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Search and Filters */}
       <Card>

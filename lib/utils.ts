@@ -21,3 +21,24 @@ export function getFirstNStoragePathSegments(text: string | undefined | null, n 
   if (segments.length <= n) return text.trim()
   return segments.slice(0, n).join(sep)
 }
+
+/** Non-negative quantity, optional upper cap, rounded to `decimals` (default 2). */
+export function clampQuantity(value: unknown, max = Number.POSITIVE_INFINITY, decimals = 2): number {
+  const d = 10 ** decimals
+  let n = typeof value === 'number' ? value : parseFloat(String(value))
+  if (!Number.isFinite(n)) n = 0
+  if (n < 0) n = 0
+  const cap = Number.isFinite(max) && max >= 0 ? max : Number.POSITIVE_INFINITY
+  if (n > cap) n = cap
+  return Math.round(n * d) / d
+}
+
+/** Display quantity with fixed decimal places (default 2). */
+export function formatQuantity(value: unknown, decimals = 2): string {
+  const n = Number(value)
+  if (!Number.isFinite(n)) return (0).toFixed(decimals)
+  return n.toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })
+}

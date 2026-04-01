@@ -97,7 +97,7 @@ export function CreateStockTransferDialog({
     () =>
       itemsInStock.map((i) => ({
         value: String(i.item_id),
-        label: i.item?.name ? `${i.item.name} (${i.total_quantity} in stock)` : `Item #${i.item_id}`,
+        label: i.item?.name ? `${i.item.name} (${i.total_quantity} in stock)` : "Item",
       })),
     [itemsInStock]
   )
@@ -105,7 +105,7 @@ export function CreateStockTransferDialog({
   const issueStorageOptions = useMemo(() => {
     if (!selectedItemInStock?.storages?.length) return []
     return selectedItemInStock.storages.map((s) => {
-      const fullPath = s.storage?.address ?? s.storage?.name ?? `Storage #${s.storage_id}`
+      const fullPath = s.storage?.address ?? s.storage?.name ?? "Storage"
       const shortLabel = getFirstNStoragePathSegments(fullPath, 3) || fullPath
       return {
         value: String(s.storage_id),
@@ -294,7 +294,7 @@ export function CreateStockTransferDialog({
               <div className="space-y-2">
                 <Label>Unit *</Label>
                 <Combobox
-                  options={units.map((u) => ({ value: String(u.id), label: (u as { name?: string }).name ?? `Unit ${u.id}` }))}
+                  options={units.map((u) => ({ value: String(u.id), label: (u as { name?: string }).name ?? "Unit" }))}
                   value={unitId || ""}
                   onValueChange={(v) => setUnitId(v === "" ? "" : String(v))}
                   placeholder="Select unit"

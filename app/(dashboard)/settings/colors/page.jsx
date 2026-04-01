@@ -5,6 +5,7 @@ import { AddColorDialog } from "@/components/colors/add-color-dialog"
 import { EditColorDialog } from "@/components/colors/edit-color-dialog"
 import { DeleteColorDialog } from "@/components/colors/delete-color-dialog"
 import { ViewColorDialog } from "@/components/colors/view-color-dialog"
+import { SettingsListPageSkeleton } from "@/components/settings/settings-list-page-skeleton"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,8 +17,8 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, Palette, TrendingUp, Hash } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Plus, Search } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -29,12 +30,8 @@ export default function ColorsPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedColor, setSelectedColor] = useState(null)
   const [colors, setColors] = useState([])
-  const [stats, setStats] = useState({
-    totalColors: 0,
-    colorsWithPantone: 0,
-    uniqueColorCodes: 0
-  })
   const [loading, setLoading] = useState(true)
+  const initialLoadDone = useRef(false)
   const [tableLoading, setTableLoading] = useState(false)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
@@ -109,6 +106,9 @@ export default function ColorsPage() {
 
   const fetchColors = async () => {
     try {
+      if (!initialLoadDone.current) {
+        setLoading(true)
+      }
       setTableLoading(true)
       const response = await apiService.getColors({
         page: currentPage,
@@ -134,37 +134,12 @@ export default function ColorsPage() {
     } finally {
       setTableLoading(false)
       setIsSearching(false)
+      if (!initialLoadDone.current) {
+        setLoading(false)
+        initialLoadDone.current = true
+      }
     }
   }
-
-  // Fetch stats
-  const fetchStats = async () => {
-    try {
-      const response = await apiService.getColors({ size: 1000 })
-      const allColors = response.data.data || []
-      
-      const colorsWithPantone = allColors.filter(color => color.pantone_code).length
-      const uniqueColorCodes = new Set(allColors.map(color => color.color_code)).size
-      
-      setStats({
-        totalColors: allColors.length,
-        colorsWithPantone,
-        uniqueColorCodes
-      })
-    } catch (error) {
-      console.error('Error fetching stats:', error)
-    }
-  }
-
-  // Initial data fetch
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true)
-      await Promise.all([fetchColors(), fetchStats()])
-      setLoading(false)
-    }
-    fetchData()
-  }, [])
 
   const handleView = (color) => {
     setSelectedColor(color)
@@ -199,43 +174,8 @@ export default function ColorsPage() {
     setCurrentPage(1)
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight">Color Management</h1>
-          </div>
-        </div>
-        
-        <div className="grid gap-4 md:grid-cols-3">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  <div className="h-4 bg-gray-200 rounded animate-pulse w-24" />
-                </CardTitle>
-                <div className="h-4 w-4 bg-gray-200 rounded animate-pulse" />
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 bg-gray-200 rounded animate-pulse w-16 mb-1" />
-                <div className="h-3 bg-gray-200 rounded animate-pulse w-20" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        
-        <Card>
-          <CardHeader>
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-32" />
-            <div className="h-4 bg-gray-200 rounded animate-pulse w-48" />
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 bg-gray-200 rounded animate-pulse" />
-          </CardContent>
-        </Card>
-      </div>
-    )
+  if (loading && !debouncedSearchTerm) {
+    return <SettingsListPageSkeleton />
   }
 
   return (
@@ -248,48 +188,6 @@ export default function ColorsPage() {
           <Plus className="mr-2 h-4 w-4" />
           Add Color
         </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Colors</CardTitle>
-            <Palette className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalColors}</div>
-            <p className="text-xs text-muted-foreground">
-              All colors in your palette
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">With Pantone</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.colorsWithPantone}</div>
-            <p className="text-xs text-muted-foreground">
-              Colors with Pantone codes
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Unique Codes</CardTitle>
-            <Hash className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.uniqueColorCodes}</div>
-            <p className="text-xs text-muted-foreground">
-              Unique color codes
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Main Content */}

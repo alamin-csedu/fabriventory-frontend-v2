@@ -98,12 +98,6 @@ export const ViewColorDialog = ({ open, onOpenChange, colorId, onSuccess }) => {
               <p className="text-sm">{format(new Date(color.created_at), 'MMM dd, yyyy HH:mm')}</p>
             </div>
 
-            {color.updated_at !== color.created_at && (
-              <div className="grid gap-2">
-                <label className="text-sm font-medium text-muted-foreground">Last Updated</label>
-                <p className="text-sm">{format(new Date(color.updated_at), 'MMM dd, yyyy HH:mm')}</p>
-              </div>
-            )}
           </div>
         ) : null}
         

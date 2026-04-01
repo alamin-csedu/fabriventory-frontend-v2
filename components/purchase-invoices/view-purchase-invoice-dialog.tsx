@@ -78,10 +78,6 @@ export function ViewPurchaseInvoiceDialog({ invoice, open, onOpenChange }: ViewP
               {getStatusBadge(invoice.status)}
             </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Invoice ID</span>
-              <span className="font-mono text-sm">#{invoice.id}</span>
-            </div>
           </div>
 
           <Separator />
@@ -94,10 +90,6 @@ export function ViewPurchaseInvoiceDialog({ invoice, open, onOpenChange }: ViewP
                 <span className="font-medium">{invoice.supplierName}</span>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Supplier ID</span>
-                <span className="font-mono text-sm">#{invoice.supplierId}</span>
-              </div>
             </div>
           </div>
 

@@ -169,7 +169,11 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
               </TableRow>
             ) : (
               filteredSuppliers.map((supplier) => (
-                <TableRow key={supplier.id}>
+                <TableRow
+                  key={supplier.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleView(supplier)}
+                >
                   <TableCell className="font-medium">{supplier.name}</TableCell>
                   <TableCell>
                     <Badge variant={supplier.status === "active" ? "default" : "secondary"}>{supplier.status}</Badge>
@@ -178,7 +182,7 @@ export function SuppliersTable({ searchTerm }: SuppliersTableProps) {
                   <TableCell>{formatCurrency(supplier.totalValue)}</TableCell>
                   <TableCell>{renderRating(supplier.rating)}</TableCell>
                   <TableCell>{formatDate(supplier.createdAt)}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">

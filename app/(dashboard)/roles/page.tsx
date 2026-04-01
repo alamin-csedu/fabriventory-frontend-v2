@@ -322,7 +322,11 @@ export default function RolesPage() {
                     </TableRow>
                   ) : (
                     filteredRoles.map((role) => (
-                      <TableRow key={role.id}>
+                      <TableRow
+                        key={role.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => openEditDialog(role)}
+                      >
                         <TableCell>
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
@@ -367,7 +371,7 @@ export default function RolesPage() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end space-x-2">
                             <Button
                               variant="ghost"

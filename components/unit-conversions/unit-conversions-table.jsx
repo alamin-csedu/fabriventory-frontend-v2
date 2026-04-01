@@ -118,7 +118,11 @@ export const UnitConversionsTable = ({
             </TableRow>
           ) : (
             conversions.map((conversion) => (
-              <TableRow key={`${conversion.from_id}-${conversion.to_id}`}>
+              <TableRow
+                key={`${conversion.from_id}-${conversion.to_id}`}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => onView(conversion)}
+              >
                 <TableCell className="font-medium">
                   {conversion.from_unit?.name || `Unit ${conversion.from_id}`}
                 </TableCell>
@@ -135,7 +139,7 @@ export const UnitConversionsTable = ({
                   <Badge variant="outline">{conversion.sequence}</Badge>
                 </TableCell>
                 <TableCell>{formatDate(conversion.created_at)}</TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">

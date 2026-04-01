@@ -26,7 +26,7 @@ interface StockLedger {
   vendor_id: number
   delivery_receipt_url: string
   payment_reference: string
-  job: {
+  job?: {
     id: number
     name: string
     description: string
@@ -35,7 +35,7 @@ interface StockLedger {
     updated_at: string
     deleted_at: string | null
   }
-  vendor: {
+  vendor?: {
     id: number
     name: string
     address: string
@@ -111,6 +111,9 @@ export function StockLedgerCombobox({
 
   const selectedStockLedger = stockLedgers.find(ledger => ledger.id === value)
 
+  const jobLabel = (ledger: StockLedger) => ledger.job?.name ?? "—"
+  const vendorLabel = (ledger: StockLedger) => ledger.vendor?.name ?? "—"
+
   const handleSearch = (search: string) => {
     fetchStockLedgers(search)
   }
@@ -129,14 +132,14 @@ export function StockLedgerCombobox({
             <div className="flex flex-col items-start text-left w-full">
               <div className="flex items-center gap-2 w-full">
                 <span className="font-medium text-sm">
-                  {selectedStockLedger.job.name}
+                  {jobLabel(selectedStockLedger)}
                 </span>
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                   {selectedStockLedger.type}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                <span>{selectedStockLedger.vendor.name}</span>
+                <span>{vendorLabel(selectedStockLedger)}</span>
                 <span className="text-blue-600 font-medium">
                   {new Date(selectedStockLedger.created_at).toLocaleDateString('en-GB', {
                     day: 'numeric',
@@ -170,7 +173,7 @@ export function StockLedgerCombobox({
                 {stockLedgers.map((ledger) => (
                   <CommandItem
                     key={ledger.id}
-                    value={`${ledger.job.name} ${ledger.type} ${ledger.vendor.name}`}
+                    value={`${jobLabel(ledger)} ${ledger.type} ${vendorLabel(ledger)}`}
                     onSelect={() => {
                       onValueChange(ledger.id === value ? undefined : ledger.id)
                       setOpen(false)
@@ -186,14 +189,14 @@ export function StockLedgerCombobox({
                     <div className="flex flex-col w-full">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm">
-                          {ledger.job.name}
+                          {jobLabel(ledger)}
                         </span>
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           {ledger.type}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                        <span>{ledger.vendor.name}</span>
+                        <span>{vendorLabel(ledger)}</span>
                         <span className="text-blue-600 font-medium">
                           {new Date(ledger.created_at).toLocaleDateString('en-GB', {
                             day: 'numeric',

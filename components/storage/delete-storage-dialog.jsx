@@ -48,7 +48,6 @@ export function DeleteStorageDialog({ storage, open, onOpenChange, onSubmit }) {
           <div className="bg-muted p-4 rounded-lg">
             <h4 className="font-medium mb-2">Storage Details:</h4>
             <p><strong>Name:</strong> {storage.name}</p>
-            <p><strong>Parent ID:</strong> {storage.parent_id || "N/A"}</p>
             <p><strong>Capacity:</strong> {storage.capacity || "N/A"}</p>
           </div>
         </div>

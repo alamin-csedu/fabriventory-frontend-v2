@@ -127,7 +127,11 @@ export const StorageTable = ({
           ) : (
             storages.map((storage) => (
               <>
-                <TableRow key={storage.id}>
+                <TableRow
+                  key={storage.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => onView(storage)}
+                >
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <span title={storage.address ?? storage.name}>
@@ -139,7 +143,10 @@ export const StorageTable = ({
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 p-0 hover:bg-blue-100"
-                        onClick={() => toggleHierarchy(storage.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toggleHierarchy(storage.id)
+                        }}
                         title={expandedHierarchies.has(storage.id) ? 'Hide Hierarchy' : 'Show Hierarchy'}
                       >
                         <GitBranch className="h-3 w-3 text-blue-600" />
@@ -148,7 +155,7 @@ export const StorageTable = ({
                   </TableCell>
                   <TableCell>{formatCapacity(storage.capacity)}</TableCell>
                   <TableCell>{formatDate(storage.created_at)}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">

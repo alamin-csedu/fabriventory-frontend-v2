@@ -167,7 +167,6 @@ export function StockLedgerTable({ searchTerm, typeFilter, refreshTrigger, onEdi
         <Table className="min-w-[700px]">
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Job</TableHead>
               <TableHead>Vendor</TableHead>
@@ -180,29 +179,32 @@ export function StockLedgerTable({ searchTerm, typeFilter, refreshTrigger, onEdi
           <TableBody>
             {stockLedgers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   No stock ledgers found
                 </TableCell>
               </TableRow>
             ) : (
               stockLedgers.map((stockLedger) => (
-                <TableRow key={stockLedger.id}>
-                  <TableCell className="font-medium">#{stockLedger.id}</TableCell>
+                <TableRow
+                  key={stockLedger.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleView(stockLedger)}
+                >
                   <TableCell>{getTypeBadge(stockLedger.type)}</TableCell>
                   <TableCell>
-                    {stockLedger.job?.name || `Job #${stockLedger.job_id}`}
+                    {stockLedger.job?.name || "—"}
                   </TableCell>
                   <TableCell>
-                    {stockLedger.vendor?.name || `Vendor #${stockLedger.vendor_id}`}
+                    {stockLedger.vendor?.name || "—"}
                   </TableCell>
                   <TableCell>
-                    {stockLedger.parent ? `#${stockLedger.parent.id} (${stockLedger.parent.type})` : "None"}
+                    {stockLedger.parent ? stockLedger.parent.type : "None"}
                   </TableCell>
                   <TableCell>
                     {stockLedger.payment_reference || "-"}
                   </TableCell>
                   <TableCell>{formatDate(stockLedger.created_at)}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center gap-2">
                       {onGoToTimeline && stockLedger.type === "Booking" && (
                         <Button
@@ -250,7 +252,7 @@ export function StockLedgerTable({ searchTerm, typeFilter, refreshTrigger, onEdi
           <div className="bg-background p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">Delete Stock Ledger</h3>
             <p className="text-muted-foreground mb-6">
-              Are you sure you want to delete stock ledger #{selectedStockLedger.id}? This action cannot be undone.
+              Are you sure you want to delete this stock ledger? This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">
               <Button

@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Package, Hash, Tag, Palette } from "lucide-react"
+import { Calendar, Package, Tag, Palette } from "lucide-react"
 
 export function ViewItemDialog({ item, open, onOpenChange }) {
   const formatDate = (dateString) => {
@@ -51,16 +51,26 @@ export function ViewItemDialog({ item, open, onOpenChange }) {
               <div className="flex items-center gap-3">
                 <Tag className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Category ID</p>
-                  <p className="text-sm text-muted-foreground">#{item.category_id}</p>
+                  <p className="text-sm font-medium">Category</p>
+                  <p className="text-sm text-muted-foreground">{item.category?.name || "—"}</p>
                 </div>
               </div>
               
               <div className="flex items-center gap-3">
                 <Palette className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Color ID</p>
-                  <p className="text-sm text-muted-foreground">#{item.color_id}</p>
+                  <p className="text-sm font-medium">Color</p>
+                  {item.color ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      <div
+                        className="w-4 h-4 rounded border border-gray-300"
+                        style={{ backgroundColor: item.color.color_code }}
+                      />
+                      <span className="text-sm text-muted-foreground">{item.color.name}</span>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No color</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -71,30 +81,12 @@ export function ViewItemDialog({ item, open, onOpenChange }) {
             <h3 className="text-lg font-semibold">System Information</h3>
             <div className="grid gap-4">
               <div className="flex items-center gap-3">
-                <Hash className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Item ID</p>
-                  <p className="text-sm text-muted-foreground">#{item.id}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Created</p>
                   <p className="text-sm text-muted-foreground">{formatDate(item.created_at)}</p>
                 </div>
               </div>
-              
-              {item.updated_at && item.updated_at !== item.created_at && (
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Last Updated</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(item.updated_at)}</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

@@ -148,10 +148,14 @@ export function StockTransferTable({
             </TableRow>
           ) : (
             data.map((row) => {
-              const unitName = row.unit?.name ?? (row.unit_id ? `#${row.unit_id}` : "")
+              const unitName = row.unit?.name ?? ""
               const quantityStr = unitName ? `${row.amount} ${unitName}` : String(row.amount)
               return (
-              <TableRow key={row.id} className="hover:bg-muted/30">
+              <TableRow
+                key={row.id}
+                className="cursor-pointer hover:bg-muted/40"
+                onClick={() => handleView(row)}
+              >
                 <TableCell className="font-medium">{row.transfer_no ?? "—"}</TableCell>
                 <TableCell>
                   {row.type === "receipt" ? (
@@ -166,21 +170,19 @@ export function StockTransferTable({
                     </Badge>
                   )}
                 </TableCell>
-                <TableCell>{row.item?.name ?? `Item #${row.item_id}`}</TableCell>
+                <TableCell>{row.item?.name ?? "—"}</TableCell>
                 <TableCell>
                   <span title={row.storage ? (row.storage.address ?? row.storage.name) : undefined}>
                     {row.storage
                       ? getFirstNStoragePathSegments(row.storage.address ?? row.storage.name, 3) || row.storage.name
-                      : row.storage_id
-                        ? `#${row.storage_id}`
-                        : "—"}
+                      : "—"}
                   </span>
                 </TableCell>
                 <TableCell className="text-right tabular-nums">{quantityStr}</TableCell>
                 <TableCell className="text-muted-foreground text-sm">
                   {row.created_at ? new Date(row.created_at).toLocaleDateString() : "—"}
                 </TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">

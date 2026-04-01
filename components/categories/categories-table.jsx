@@ -69,12 +69,16 @@ export const CategoriesTable = ({
             </TableRow>
           ) : (
             categories.map((category) => (
-              <TableRow key={category.id}>
+              <TableRow
+                key={category.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => onView(category)}
+              >
                 <TableCell className="font-medium">
                   {category.name}
                 </TableCell>
                 <TableCell>{formatDate(category.created_at)}</TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">

@@ -107,26 +107,11 @@ export function ViewVendorDialog({ vendor, open, onOpenChange }) {
                   <p className="font-medium">{formatDate(vendor.created_at)}</p>
                 </div>
                 
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>Last Updated</span>
-                  </div>
-                  <p className="font-medium">{formatDate(vendor.updated_at)}</p>
-                </div>
               </div>
 
               <Separator />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <User className="h-4 w-4" />
-                    <span>Created By</span>
-                  </div>
-                  <Badge variant="outline">User ID: {vendor.created_by}</Badge>
-                </div>
-                
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Globe className="h-4 w-4" />
@@ -136,18 +121,10 @@ export function ViewVendorDialog({ vendor, open, onOpenChange }) {
                 </div>
               </div>
 
-              {vendor.modified_by && (
+              {vendor.modified_ip && (
                 <>
                   <Separator />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <User className="h-4 w-4" />
-                        <span>Last Modified By</span>
-                      </div>
-                      <Badge variant="outline">User ID: {vendor.modified_by}</Badge>
-                    </div>
-                    
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Globe className="h-4 w-4" />

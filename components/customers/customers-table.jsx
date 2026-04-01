@@ -84,7 +84,11 @@ export const CustomersTable = ({
             </TableRow>
           ) : (
             customers.map((customer) => (
-              <TableRow key={customer.id}>
+              <TableRow
+                key={customer.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => onView(customer)}
+              >
                 <TableCell className="font-medium">{customer.name}</TableCell>
                 <TableCell>{customer.email}</TableCell>
                 <TableCell className="max-w-[200px] truncate">
@@ -92,7 +96,7 @@ export const CustomersTable = ({
                 </TableCell>
                 <TableCell className="max-w-[300px] truncate">{customer.address}</TableCell>
                 <TableCell>{formatDate(customer.created_at)}</TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">

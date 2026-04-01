@@ -91,7 +91,11 @@ export const VendorsTable = ({
               </TableRow>
             ) : (
               vendors.map((vendor) => (
-                <TableRow key={vendor.id}>
+                <TableRow
+                  key={vendor.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleView(vendor)}
+                >
                   <TableCell className="font-medium">{vendor.name}</TableCell>
                   <TableCell>{vendor.email}</TableCell>
                   <TableCell className="max-w-[200px] truncate">
@@ -99,7 +103,7 @@ export const VendorsTable = ({
                   </TableCell>
                   <TableCell className="max-w-[300px] truncate">{vendor.address}</TableCell>
                   <TableCell>{formatDate(vendor.created_at)}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">

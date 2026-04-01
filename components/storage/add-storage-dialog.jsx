@@ -140,7 +140,8 @@ export function AddStorageDialog({ open, onOpenChange, onSubmit }) {
                 id="capacity"
                 type="number"
                 step="0.01"
-                placeholder="Enter storage capacity (optional)"
+                min="0"
+                placeholder="Capacity (optional, 0 or greater)"
                 value={formData.capacity}
                 onChange={(e) => setFormData(prev => ({ ...prev, capacity: e.target.value }))}
               />

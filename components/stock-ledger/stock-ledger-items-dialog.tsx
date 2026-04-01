@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, Edit, Trash2, Plus } from "lucide-react"
 import { apiService } from "@/lib/api"
+import { clampQuantity, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 
 interface StockLedgerItem {
@@ -144,10 +145,15 @@ export function StockLedgerItemsDialog({ stockLedgerId, open, onOpenChange }: St
 
     try {
       setLoading(true)
+      const q = clampQuantity(formData.quantity, Number.POSITIVE_INFINITY, 2)
+      if (q <= 0) {
+        toast.error("Quantity must be greater than zero")
+        return
+      }
       const submitData = {
         stock_ledger_id: stockLedgerId,
         item_id: parseInt(formData.item_id),
-        quantity: parseFloat(formData.quantity),
+        quantity: q,
         unit_id: parseInt(formData.unit_id),
       }
 
@@ -185,7 +191,7 @@ export function StockLedgerItemsDialog({ stockLedgerId, open, onOpenChange }: St
         <DialogHeader>
           <DialogTitle>Stock Ledger Items</DialogTitle>
           <DialogDescription>
-            Manage items for stock ledger #{stockLedgerId}
+            Manage line items for this stock ledger
           </DialogDescription>
         </DialogHeader>
 
@@ -226,13 +232,13 @@ export function StockLedgerItemsDialog({ stockLedgerId, open, onOpenChange }: St
                       <TableRow key={item.id}>
                         <TableCell className="font-medium">{index + 1}</TableCell>
                         <TableCell className="font-medium">
-                          {item.item?.name || `Item #${item.item_id}`}
+                          {item.item?.name || "—"}
                         </TableCell>
                         <TableCell className="text-right font-mono">
-                          {item.quantity.toLocaleString()}
+                          {formatQuantity(item.quantity)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {item.unit?.name || `Unit #${item.unit_id}`}
+                          {item.unit?.name || "—"}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -310,8 +316,12 @@ export function StockLedgerItemsDialog({ stockLedgerId, open, onOpenChange }: St
                   id="quantity"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.quantity}
                   onChange={(e) => handleInputChange("quantity", e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E") e.preventDefault()
+                  }}
                   placeholder="Enter quantity"
                 />
               </div>

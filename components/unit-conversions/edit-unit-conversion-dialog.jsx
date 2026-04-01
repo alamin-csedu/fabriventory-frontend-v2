@@ -162,9 +162,10 @@ export const EditUnitConversionDialog = ({ open, onOpenChange, conversion, onSuc
                   id="factor"
                   type="number"
                   step="0.01"
+                  min="0"
                   value={formData.factor}
                   onChange={(e) => handleInputChange("factor", e.target.value)}
-                  placeholder="Enter conversion factor"
+                  placeholder="Conversion factor (≥ 0)"
                   required
                 />
               </div>
@@ -173,9 +174,10 @@ export const EditUnitConversionDialog = ({ open, onOpenChange, conversion, onSuc
                 <Input
                   id="sequence"
                   type="number"
+                  min="0"
                   value={formData.sequence}
                   onChange={(e) => handleInputChange("sequence", e.target.value)}
-                  placeholder="Enter sequence"
+                  placeholder="Order / sequence (≥ 0)"
                   required
                 />
               </div>

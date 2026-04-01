@@ -48,8 +48,12 @@ export function DeleteItemDialog({ item, open, onOpenChange, onSubmit }) {
           <div className="bg-muted p-4 rounded-lg">
             <h4 className="font-medium mb-2">Item Details:</h4>
             <p><strong>Name:</strong> {item.name}</p>
-            <p><strong>Category ID:</strong> {item.category_id}</p>
-            <p><strong>Color ID:</strong> {item.color_id}</p>
+            {item.category?.name && (
+              <p><strong>Category:</strong> {item.category.name}</p>
+            )}
+            {item.color?.name && (
+              <p><strong>Color:</strong> {item.color.name}</p>
+            )}
           </div>
         </div>
 

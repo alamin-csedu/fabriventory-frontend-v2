@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, FileText, Hash, User } from "lucide-react"
+import { Calendar, FileText, User } from "lucide-react"
 
 export function ViewJobDialog({ job, open, onOpenChange }) {
   const formatDate = (dateString) => {
@@ -48,13 +48,15 @@ export function ViewJobDialog({ job, open, onOpenChange }) {
                 </div>
               </div>
               
+              {job.customer?.name && (
               <div className="flex items-center gap-3">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Customer ID</p>
-                  <p className="text-sm text-muted-foreground">#{job.customer_id}</p>
+                  <p className="text-sm font-medium">Customer</p>
+                  <p className="text-sm text-muted-foreground">{job.customer.name}</p>
                 </div>
               </div>
+              )}
               
               <div className="flex items-start gap-3">
                 <FileText className="h-4 w-4 text-muted-foreground mt-1" />
@@ -71,30 +73,12 @@ export function ViewJobDialog({ job, open, onOpenChange }) {
             <h3 className="text-lg font-semibold">System Information</h3>
             <div className="grid gap-4">
               <div className="flex items-center gap-3">
-                <Hash className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Job ID</p>
-                  <p className="text-sm text-muted-foreground">#{job.id}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Created</p>
                   <p className="text-sm text-muted-foreground">{formatDate(job.created_at)}</p>
                 </div>
               </div>
-              
-              {job.updated_at && job.updated_at !== job.created_at && (
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Last Updated</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(job.updated_at)}</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

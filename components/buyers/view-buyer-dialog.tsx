@@ -63,10 +63,6 @@ export function ViewBuyerDialog({ buyer, open, onOpenChange }: ViewBuyerDialogPr
               <Badge variant={buyer.status === "active" ? "default" : "secondary"}>{buyer.status}</Badge>
             </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Buyer ID</span>
-              <span className="font-mono text-sm">#{buyer.id}</span>
-            </div>
           </div>
 
           <Separator />

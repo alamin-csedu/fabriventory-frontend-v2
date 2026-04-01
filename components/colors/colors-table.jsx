@@ -149,7 +149,11 @@ export const ColorsTable = ({
         </TableHeader>
         <TableBody>
           {colors.map((color) => (
-            <TableRow key={color.id}>
+            <TableRow
+              key={color.id}
+              className="cursor-pointer hover:bg-muted/50"
+              onClick={() => onView(color)}
+            >
               <TableCell className="font-medium">
                 {color.name}
               </TableCell>
@@ -178,7 +182,7 @@ export const ColorsTable = ({
               <TableCell>
                 {format(new Date(color.created_at), 'MMM dd, yyyy')}
               </TableCell>
-              <TableCell>
+              <TableCell onClick={(e) => e.stopPropagation()}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="h-8 w-8 p-0">

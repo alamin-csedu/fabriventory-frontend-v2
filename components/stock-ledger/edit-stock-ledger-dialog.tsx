@@ -11,6 +11,7 @@ import { StockLedgerCombobox } from "@/components/ui/stock-ledger-combobox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { apiService } from "@/lib/api"
+import { clampQuantity, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 import { Eye, Plus, Trash2, Save, Edit, X } from "lucide-react"
 import { ImagePreviewModal } from "@/components/ui/image-preview-modal"
@@ -229,7 +230,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
 
         const newItem: StockLedgerItem = {
           item_id: parseInt(newItemForm.item_id),
-          quantity: parseFloat(newItemForm.quantity),
+          quantity: clampQuantity(newItemForm.quantity, Number.POSITIVE_INFINITY, 2),
           unit_id: parseInt(newItemForm.unit_id),
           item: selectedItem,
           unit: selectedUnit,
@@ -244,7 +245,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
           const response = await apiService.createStockLedgerItem({
             stock_ledger_id: stockLedger.id,
             item_id: parseInt(newItemForm.item_id),
-            quantity: parseFloat(newItemForm.quantity),
+            quantity: clampQuantity(newItemForm.quantity, Number.POSITIVE_INFINITY, 2),
             unit_id: parseInt(newItemForm.unit_id),
           })
           
@@ -338,7 +339,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
 
     const newItem: StockLedgerItem = {
       item_id: parseInt(newItemForm.item_id),
-      quantity: parseFloat(newItemForm.quantity),
+      quantity: clampQuantity(newItemForm.quantity, Number.POSITIVE_INFINITY, 2),
       unit_id: parseInt(newItemForm.unit_id),
       item: selectedItem,
       unit: selectedUnit,
@@ -354,7 +355,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
         const response = await apiService.createStockLedgerItem({
           stock_ledger_id: stockLedger!.id,
           item_id: parseInt(newItemForm.item_id),
-          quantity: parseFloat(newItemForm.quantity),
+          quantity: clampQuantity(newItemForm.quantity, Number.POSITIVE_INFINITY, 2),
           unit_id: parseInt(newItemForm.unit_id),
         })
         
@@ -390,7 +391,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
 
       const newItem: StockLedgerItem = {
         item_id: itemId,
-        quantity: quantity,
+        quantity: clampQuantity(quantity, Number.POSITIVE_INFINITY, 2),
         unit_id: unitId,
         item: selectedItem,
         unit: selectedUnit,
@@ -406,7 +407,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
           const response = await apiService.createStockLedgerItem({
             stock_ledger_id: stockLedger!.id,
             item_id: itemId,
-            quantity: quantity,
+            quantity: clampQuantity(quantity, Number.POSITIVE_INFINITY, 2),
             unit_id: unitId,
           })
           
@@ -512,11 +513,17 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
     }
   }
 
-  const handleItemChange = (index: number, field: keyof StockLedgerItem, value: any) => {
-    setStockLedgerItems(prev => 
-      prev.map((item, i) => 
-        i === index ? { ...item, [field]: value } : item
-      )
+  const blockInvalidQtyKeys = (e: { key: string; preventDefault: () => void }) => {
+    if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E") e.preventDefault()
+  }
+
+  const handleItemChange = (index: number, field: keyof StockLedgerItem, value: unknown) => {
+    let v = value
+    if (field === "quantity") {
+      v = clampQuantity(value, Number.POSITIVE_INFINITY, 2)
+    }
+    setStockLedgerItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: v } : item))
     )
   }
 
@@ -612,7 +619,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-medium text-blue-800">Current Parent:</span>
                   <span className="text-sm text-blue-700">
-                    Job #{stockLedger.parent.job_id} - {stockLedger.parent.type} - {stockLedger.parent.payment_reference}
+                    {stockLedger.parent.type} — {stockLedger.parent.payment_reference || "—"}
                   </span>
                 </div>
                 <p className="text-xs text-blue-600 mt-1">
@@ -768,7 +775,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
                                 <div className={`w-2 h-2 rounded-full ${
                                   item.isNew ? 'bg-green-500' : 'bg-blue-500'
                                 }`}></div>
-                                <span>{item.item?.name || `Item #${item.item_id}`}</span>
+                                <span>{item.item?.name || "—"}</span>
                                 {item.isNew && (
                                   <Badge variant="outline" className="text-xs bg-green-100 text-green-800 border-green-200">
                                     New
@@ -785,14 +792,17 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
                                 min="0"
                                 value={item.quantity}
                                 onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                                onKeyDown={(e) => handleKeyDown(e, index)}
+                                onKeyDown={(e) => {
+                                  blockInvalidQtyKeys(e)
+                                  handleKeyDown(e, index)
+                                }}
                                 className="h-8 w-full"
                                 placeholder="0.00"
                                 autoFocus
                               />
                             ) : (
                               <div className="font-semibold text-gray-900">
-                                {item.quantity.toLocaleString()}
+                                {formatQuantity(item.quantity)}
                               </div>
                             )}
                           </TableCell>
@@ -815,7 +825,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
                               </Select>
                             ) : (
                               <div className="text-sm text-gray-600">
-                                {item.unit?.name || `Unit #${item.unit_id}`}
+                                {item.unit?.name || "—"}
                               </div>
                             )}
                           </TableCell>
@@ -899,6 +909,7 @@ export function EditStockLedgerDialog({ stockLedger, open, onOpenChange, onSucce
                               min="0"
                               value={newItemForm.quantity}
                               onChange={(e) => handleNewItemFormChange("quantity", e.target.value)}
+                              onKeyDown={blockInvalidQtyKeys}
                               placeholder="0.00 *"
                               className="h-8 w-full border-green-300 focus:border-green-500"
                             />

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,7 +23,6 @@ import {
   Palette,
   Ruler,
   Boxes,
-  Sparkles,
 } from "lucide-react"
 import { apiService } from "@/lib/api"
 import { cn, getFirstNStoragePathSegments } from "@/lib/utils"
@@ -91,13 +90,6 @@ export default function DashboardPage() {
     return new Intl.NumberFormat("en-US").format(num)
   }
 
-  const greeting = useMemo(() => {
-    const h = new Date().getHours()
-    if (h < 12) return "Good morning"
-    if (h < 18) return "Good afternoon"
-    return "Good evening"
-  }, [])
-
   if (!isAuthenticated) {
     return null
   }
@@ -161,42 +153,17 @@ export default function DashboardPage() {
 
   return (
     <div className="relative mx-auto max-w-[1400px] space-y-8 pb-8">
-      {/* Ambient background */}
-      <div
-        className="pointer-events-none fixed inset-0 -z-10 opacity-[0.45] dark:opacity-[0.25]"
-        aria-hidden
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 50% at 50% -20%, oklch(0.55 0.12 240 / 0.15), transparent 55%), radial-gradient(ellipse 60% 40% at 100% 0%, oklch(0.6 0.08 200 / 0.08), transparent 50%)",
-        }}
-      />
-
-      {/* Header */}
-      <header className="flex flex-col gap-6 border-b border-border/60 pb-8 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">{greeting}</p>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">Home</h1>
-            <Badge variant="secondary" className="font-normal">
-              <Sparkles className="mr-1 h-3 w-3" />
-              Overview
-            </Badge>
-          </div>
-          <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
-            Fabric inventory at a glance — stock, bookings, and activity in one place.
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Button
-            onClick={fetchDashboardData}
-            variant="outline"
-            size="sm"
-            className="gap-2 border-border/80 bg-background/80 shadow-sm"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
-        </div>
+      <header className="flex flex-col gap-3 border-b border-border/60 pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">Home</h1>
+        <Button
+          onClick={fetchDashboardData}
+          variant="outline"
+          size="sm"
+          className="gap-2 border-border/80 bg-background/80 shadow-sm"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh
+        </Button>
       </header>
 
       {/* KPI row */}
@@ -417,7 +384,6 @@ export default function DashboardPage() {
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-medium leading-snug">{job.job_name}</p>
-                    <p className="text-xs text-muted-foreground">Customer #{job.customer_id}</p>
                   </div>
                   <time className="shrink-0 text-xs tabular-nums text-muted-foreground">{formatDate(job.created_at)}</time>
                 </li>
@@ -454,8 +420,6 @@ export default function DashboardPage() {
       </Card>
 
       <footer className="flex items-center justify-center gap-2 border-t border-border/40 pt-6 text-xs text-muted-foreground">
-        <span>Updated {formatDate(dashboardData.last_updated)}</span>
-        <span className="text-border">·</span>
         <span className="inline-flex items-center gap-1">
           Fabriventory
           <ArrowUpRight className="h-3 w-3 opacity-60" />

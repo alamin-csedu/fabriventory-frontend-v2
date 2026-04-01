@@ -80,11 +80,6 @@ export function ViewSupplierDialog({ supplier, open, onOpenChange }: ViewSupplie
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Supplier ID</span>
-              <span className="font-mono text-sm">#{supplier.id}</span>
-            </div>
-
-            <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-muted-foreground">Rating</span>
               {renderRating(supplier.rating)}
             </div>

@@ -5,8 +5,9 @@ import { AddCategoryDialog } from "@/components/categories/add-category-dialog"
 import { EditCategoryDialog } from "@/components/categories/edit-category-dialog"
 import { DeleteCategoryDialog } from "@/components/categories/delete-category-dialog"
 import { ViewCategoryDialog } from "@/components/categories/view-category-dialog"
+import { SettingsListPageSkeleton } from "@/components/settings/settings-list-page-skeleton"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { 
   Pagination, 
@@ -16,8 +17,8 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, Tag, TrendingUp, Package } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Plus, Search } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -29,12 +30,8 @@ export default function CategoriesPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [categories, setCategories] = useState([])
-  const [stats, setStats] = useState({
-    totalCategories: 0,
-    activeCategories: 0,
-    totalItems: 0
-  })
   const [loading, setLoading] = useState(true)
+  const initialLoadDone = useRef(false)
   const [tableLoading, setTableLoading] = useState(false)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
@@ -49,6 +46,9 @@ export default function CategoriesPage() {
   // Centralized API functions
   const fetchCategories = async () => {
     try {
+      if (!initialLoadDone.current) {
+        setLoading(true)
+      }
       const response = await apiService.getCategories({
         page: currentPage,
         size: perPage,
@@ -72,26 +72,10 @@ export default function CategoriesPage() {
     } finally {
       setTableLoading(false)
       setIsSearching(false)
-    }
-  }
-  
-  const fetchStats = async () => {
-    try {
-      setLoading(true)
-      const response = await apiService.getCategories({ page: 1, size: 10 })
-      
-      if (response.data?.data) {
-        const categories = response.data.data
-        setStats({
-          totalCategories: categories.length,
-          activeCategories: categories.length, // All categories are considered active for now
-          totalItems: 0 // This would need to be calculated from items using categories
-        })
+      if (!initialLoadDone.current) {
+        setLoading(false)
+        initialLoadDone.current = true
       }
-    } catch (error) {
-      console.error('Error fetching category stats:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -101,7 +85,6 @@ export default function CategoriesPage() {
       toast.success("Category created successfully")
       setIsAddDialogOpen(false)
       await fetchCategories()
-      await fetchStats()
     } catch (error) {
       console.error('Error creating category:', error)
       toast.error("Failed to create category. Please try again.")
@@ -116,7 +99,6 @@ export default function CategoriesPage() {
       setIsEditDialogOpen(false)
       setSelectedCategory(null)
       await fetchCategories()
-      await fetchStats()
     } catch (error) {
       console.error('Error updating category:', error)
       toast.error("Failed to update category. Please try again.")
@@ -131,7 +113,6 @@ export default function CategoriesPage() {
       setIsDeleteDialogOpen(false)
       setSelectedCategory(null)
       await fetchCategories()
-      await fetchStats()
     } catch (error) {
       console.error('Error deleting category:', error)
       toast.error("Failed to delete category. Please try again.")
@@ -157,12 +138,7 @@ export default function CategoriesPage() {
     fetchCategories()
   }, [debouncedSearchTerm, currentPage, perPage, sorting.sortBy, sorting.sortOrder])
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
   const handleRefresh = () => {
-    fetchStats()
     fetchCategories()
   }
 
@@ -189,6 +165,10 @@ export default function CategoriesPage() {
     setIsViewDialogOpen(true)
   }
 
+  if (loading && !debouncedSearchTerm) {
+    return <SettingsListPageSkeleton />
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -201,71 +181,6 @@ export default function CategoriesPage() {
           Add Category
         </Button>
       </div>
-
-      {/* Stats Cards */}
-      {loading ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-2"></div>
-                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Categories</CardTitle>
-              <Tag className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalCategories}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Available</span> categories
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Categories</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.activeCategories}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Currently</span> in use
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalItems}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Items</span> using categories
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Search and Filters */}
       <Card>
