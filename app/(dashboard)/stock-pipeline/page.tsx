@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Search, TrendingUp, Clock, CheckCircle, Database } from "lucide-react"
+import { Plus, Search } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 
@@ -46,70 +46,19 @@ export default function StockLedgerPage() {
       <OpenModalFromAction action="add-booking" onOpen={() => setIsAddDialogOpen(true)} />
 
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-balance text-xl font-bold sm:text-2xl lg:text-3xl">Bookings</h1>
-          <p className="text-pretty text-muted-foreground">Manage booking entries and track their delivery timeline</p>
-        </div>
+        <h1 className="text-balance text-xl font-semibold sm:text-2xl">Bookings</h1>
         <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
           <Plus className="h-4 w-4" />
           Add Booking
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
-            <Database className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">127</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-primary">+18</span> new this month
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Delivered</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">89</div>
-            <p className="text-xs text-muted-foreground">Fully delivered</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">23</div>
-            <p className="text-xs text-muted-foreground">Partial deliveries</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">15</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-primary">+3</span> this week
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Booking Entries</CardTitle>
-          <CardDescription>View and manage booking entries - click &quot;Go&quot; to see full timeline</CardDescription>
+          <CardDescription>
+            Click a row to view details. For bookings, use &quot;Go&quot; in the row or the menu for the delivery timeline.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-6 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">

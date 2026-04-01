@@ -5,9 +5,9 @@ import { AddCustomerDialog } from "@/components/customers/add-customer-dialog"
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog"
 import { DeleteCustomerDialog } from "@/components/customers/delete-customer-dialog"
 import { ViewCustomerDialog } from "@/components/customers/view-customer-dialog"
-import { CustomersPageSkeleton, CustomersTableSkeleton, StatsCardsSkeleton } from "@/components/customers/customers-page-skeleton"
+import { CustomersPageSkeleton, CustomersTableSkeleton } from "@/components/customers/customers-page-skeleton"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { 
   Pagination, 
@@ -17,8 +17,8 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, Users, TrendingUp, DollarSign } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Plus, Search } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -30,12 +30,8 @@ export default function CustomersPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState(null)
   const [customers, setCustomers] = useState([])
-  const [stats, setStats] = useState({
-    totalCustomers: 0,
-    activeCustomers: 0,
-    totalValue: 0
-  })
   const [loading, setLoading] = useState(true)
+  const initialLoadDone = useRef(false)
   const [tableLoading, setTableLoading] = useState(false)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
@@ -50,6 +46,9 @@ export default function CustomersPage() {
   // Centralized API functions
   const fetchCustomers = async () => {
     try {
+      if (!initialLoadDone.current) {
+        setLoading(true)
+      }
       const response = await apiService.getCustomers({
         page: currentPage,
         size: perPage,
@@ -73,26 +72,10 @@ export default function CustomersPage() {
     } finally {
       setTableLoading(false)
       setIsSearching(false)
-    }
-  }
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true)
-      const response = await apiService.getCustomers({ page: 1, size: 10 })
-      
-      if (response.data?.data) {
-        const customers = response.data.data
-        setStats({
-          totalCustomers: customers.length,
-          activeCustomers: customers.length, // All customers are considered active for now
-          totalValue: 0 // This would need to be calculated from sales
-        })
+      if (!initialLoadDone.current) {
+        setLoading(false)
+        initialLoadDone.current = true
       }
-    } catch (error) {
-      console.error('Error fetching customer stats:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -102,7 +85,6 @@ export default function CustomersPage() {
       toast.success("Customer created successfully")
       setIsAddDialogOpen(false)
       await fetchCustomers()
-      await fetchStats()
     } catch (error) {
       console.error('Error creating customer:', error)
       toast.error("Failed to create customer. Please try again.")
@@ -117,7 +99,6 @@ export default function CustomersPage() {
       setIsEditDialogOpen(false)
       setSelectedCustomer(null)
       await fetchCustomers()
-      await fetchStats()
     } catch (error) {
       console.error('Error updating customer:', error)
       toast.error("Failed to update customer. Please try again.")
@@ -132,7 +113,6 @@ export default function CustomersPage() {
       setIsDeleteDialogOpen(false)
       setSelectedCustomer(null)
       await fetchCustomers()
-      await fetchStats()
     } catch (error) {
       console.error('Error deleting customer:', error)
       toast.error("Failed to delete customer. Please try again.")
@@ -158,12 +138,7 @@ export default function CustomersPage() {
     fetchCustomers()
   }, [debouncedSearchTerm, currentPage, perPage, sorting.sortBy, sorting.sortOrder])
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
   const handleRefresh = () => {
-    fetchStats()
     fetchCustomers()
   }
 
@@ -207,58 +182,6 @@ export default function CustomersPage() {
           Add Customer
         </Button>
       </div>
-
-      {/* Stats Cards */}
-      {loading ? (
-        <StatsCardsSkeleton />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalCustomers}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Active</span> customers
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.activeCustomers}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Currently</span> active
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                $0
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">This month</span>
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Search and Filters */}
       <Card>

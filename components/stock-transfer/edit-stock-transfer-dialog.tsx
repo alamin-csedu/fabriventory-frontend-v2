@@ -152,7 +152,7 @@ export function EditStockTransferDialog({
             <div className="space-y-2">
               <Label>Job *</Label>
               <Combobox
-                options={[{ value: "all", label: "Select job" }, ...jobs.map((j) => ({ value: String(j.id), label: (j as { name?: string }).name ?? `Job ${j.id}` }))]}
+                options={[{ value: "all", label: "Select job" }, ...jobs.map((j) => ({ value: String(j.id), label: (j as { name?: string }).name ?? "Job" }))]}
                 value={jobId || "all"}
                 onValueChange={(v) => setJobId(v === "all" ? "" : String(v))}
                 placeholder="Select job"
@@ -187,7 +187,7 @@ export function EditStockTransferDialog({
               <div className="space-y-2">
                 <Label>Unit</Label>
                 <Combobox
-                  options={[{ value: "all", label: "None" }, ...units.map((u) => ({ value: String(u.id), label: (u as { name?: string }).name ?? `Unit ${u.id}` }))]}
+                  options={[{ value: "all", label: "None" }, ...units.map((u) => ({ value: String(u.id), label: (u as { name?: string }).name ?? "Unit" }))]}
                   value={unitId || "all"}
                   onValueChange={(v) => setUnitId(v === "all" ? "" : String(v))}
                   placeholder="None"

@@ -380,7 +380,11 @@ export default function UsersPage() {
                     </TableRow>
                   ) : (
                     filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
+                      <TableRow
+                        key={user.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => openEditDialog(user)}
+                      >
                         <TableCell>
                           <div className="flex items-center space-x-3">
                             <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
@@ -433,7 +437,7 @@ export default function UsersPage() {
                             </span>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end space-x-2">
                             <Button
                               variant="ghost"

@@ -69,12 +69,16 @@ export const UnitsTable = ({
             </TableRow>
           ) : (
             units.map((unit) => (
-              <TableRow key={unit.id}>
+              <TableRow
+                key={unit.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => onView(unit)}
+              >
                 <TableCell className="font-medium">
                   {unit.name}
                 </TableCell>
                 <TableCell>{formatDate(unit.created_at)}</TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">

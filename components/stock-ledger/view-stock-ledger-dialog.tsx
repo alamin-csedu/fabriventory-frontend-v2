@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Eye } from "lucide-react"
 import { ImagePreviewModal } from "@/components/ui/image-preview-modal"
 import { apiService } from "@/lib/api"
+import { formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 import { StockLedgerItemsDialog } from "./stock-ledger-items-dialog"
 
@@ -132,53 +133,108 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Stock Ledger Details</DialogTitle>
-          <DialogDescription>
-            View detailed information about stock ledger #{stockLedger.id}
+      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <DialogHeader className="space-y-3 border-b border-border/60 bg-muted/20 px-6 py-5 pr-14 text-left">
+          <div className="flex flex-wrap items-center gap-2">
+            <DialogTitle className="text-xl font-semibold tracking-tight">Stock ledger</DialogTitle>
+            {getTypeBadge(stockLedger.type)}
+          </div>
+          <DialogDescription className="text-sm leading-relaxed">
+            {stockLedger.type === "Delivery"
+              ? "Delivery record — quantities and receipt below."
+              : "Booking record — line items and job details below."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 min-w-0 overflow-hidden">
-          {/* Basic Information */}
-          <div className="space-y-4 min-w-0">
-            <h3 className="text-lg font-semibold">Basic Information</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="min-h-0 flex-1 space-y-0 overflow-y-auto">
+          {/* Line items — primary */}
+          <div className="space-y-4 px-6 py-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">ID</label>
-                <p className="text-sm">#{stockLedger.id}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Type</label>
-                <div className="mt-1">{getTypeBadge(stockLedger.type)}</div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Job</label>
-                <p className="text-sm">{stockLedger.job?.name || `Job #${stockLedger.job_id}`}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Vendor</label>
-                <p className="text-sm">{stockLedger.vendor?.name || `Vendor #${stockLedger.vendor_id}`}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Parent</label>
-                <p className="text-sm">
-                  {stockLedger.parent ? `#${stockLedger.parent.id} (${stockLedger.parent.type})` : "None"}
+                <h3 className="text-base font-semibold leading-none">Line items</h3>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                  Quantities booked or delivered for this entry.
                 </p>
               </div>
+              <Button type="button" size="sm" onClick={() => setIsItemsDialogOpen(true)} className="shrink-0">
+                Manage items
+              </Button>
+            </div>
+            {loading ? (
+              <div className="flex min-h-[120px] items-center justify-center rounded-xl border border-dashed border-border bg-muted/15">
+                <div className="h-7 w-7 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              </div>
+            ) : stockLedgerItems.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border bg-muted/10 px-4 py-10 text-center text-sm text-muted-foreground">
+                No line items for this stock ledger yet.
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-sm">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b bg-muted/40 hover:bg-muted/40">
+                      <TableHead className="w-12 font-semibold">#</TableHead>
+                      <TableHead className="font-semibold">Item</TableHead>
+                      <TableHead className="text-right font-semibold">Quantity</TableHead>
+                      <TableHead className="text-right font-semibold">Unit</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {stockLedgerItems.map((item, index) => (
+                      <TableRow key={item.id} className="hover:bg-muted/30">
+                        <TableCell className="font-medium text-muted-foreground">{index + 1}</TableCell>
+                        <TableCell className="font-medium">{item.item?.name || "—"}</TableCell>
+                        <TableCell className="text-right font-mono tabular-nums">
+                          {formatQuantity(item.quantity)}
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          {item.unit?.name || "—"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* Summary & delivery */}
+          <div className="space-y-5 px-6 py-5">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Details</h3>
+            <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Payment Reference</label>
-                <p className="text-sm">{stockLedger.payment_reference || "None"}</p>
+                <label className="text-xs font-medium text-muted-foreground">Job</label>
+                <p className="mt-1 text-sm">{stockLedger.job?.name || "—"}</p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Vendor</label>
+                <p className="mt-1 text-sm">{stockLedger.vendor?.name || "—"}</p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Parent</label>
+                <p className="mt-1 text-sm">{stockLedger.parent ? stockLedger.parent.type : "None"}</p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Payment reference</label>
+                <p className="mt-1 font-mono text-sm">{stockLedger.payment_reference || "—"}</p>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="text-xs font-medium text-muted-foreground">
+                  {stockLedger.type === "Delivery" ? "Delivered at" : "Recorded at"}
+                </label>
+                <p className="mt-1 text-sm font-medium">{formatDate(stockLedger.created_at)}</p>
               </div>
             </div>
-            
+
             {stockLedger.delivery_receipt_url && (
-              <div className="space-y-2 min-w-0 max-w-full">
-                <label className="text-sm font-medium text-muted-foreground">Delivery Receipt</label>
-                <div className="text-sm font-medium text-gray-700">Preview</div>
+              <div className="space-y-3 rounded-xl border border-border/70 bg-muted/10 p-4">
+                <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Delivery receipt
+                </label>
                 <div
-                  className="relative group cursor-pointer rounded-lg overflow-hidden border-2 border-gray-200 hover:border-blue-300 transition-all duration-200 max-w-full w-full"
+                  className="group relative w-full max-w-full cursor-pointer overflow-hidden rounded-lg border-2 border-border transition-colors hover:border-primary/40"
                   onClick={() => setShowImageModal(true)}
                 >
                   <img
@@ -188,7 +244,7 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
                         : `https://${stockLedger.delivery_receipt_url}`
                     }
                     alt="Delivery receipt"
-                    className="w-full h-48 object-cover object-center max-w-full group-hover:scale-105 transition-transform duration-200"
+                    className="h-44 w-full max-w-full object-cover object-center transition-transform group-hover:scale-[1.02]"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement
                       target.style.display = "none"
@@ -196,22 +252,20 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
                       if (fallback) fallback.style.display = "flex"
                     }}
                   />
-                  <div className="fallback hidden absolute inset-0 bg-gray-100 flex items-center justify-center">
-                    <div className="text-center text-gray-500">
-                      <Eye className="h-8 w-8 mx-auto mb-2" />
-                      <p className="text-sm">Click to view full image</p>
+                  <div className="fallback absolute inset-0 hidden items-center justify-center bg-muted">
+                    <div className="text-center text-muted-foreground">
+                      <Eye className="mx-auto mb-2 h-8 w-8" />
+                      <p className="text-sm">Preview unavailable — open link below</p>
                     </div>
                   </div>
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/90 rounded-full p-2">
-                      <Eye className="h-5 w-5 text-gray-700" />
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10">
+                    <div className="rounded-full bg-background/90 p-2 opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
+                      <Eye className="h-5 w-5 text-foreground" />
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 truncate min-w-0 max-w-full">
-                  {stockLedger.delivery_receipt_url}
-                </p>
                 <Button
+                  type="button"
                   variant="outline"
                   size="sm"
                   className="w-fit"
@@ -221,77 +275,8 @@ export function ViewStockLedgerDialog({ stockLedger, open, onOpenChange }: ViewS
                     window.open(url, "_blank")
                   }}
                 >
-                  View Receipt
+                  Open receipt
                 </Button>
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          {/* Timestamps */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Timestamps</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Created At</label>
-                <p className="text-sm">{formatDate(stockLedger.created_at)}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Updated At</label>
-                <p className="text-sm">{formatDate(stockLedger.updated_at)}</p>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Stock Ledger Items */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Items</h3>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setIsItemsDialogOpen(true)}
-              >
-                Manage Items
-              </Button>
-            </div>
-            {loading ? (
-              <div className="flex items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              </div>
-            ) : stockLedgerItems.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No items found for this stock ledger.</p>
-            ) : (
-              <div className="rounded-md border overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">#</TableHead>
-                      <TableHead>Item Name</TableHead>
-                      <TableHead className="text-right">Quantity</TableHead>
-                      <TableHead className="text-right">Unit</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {stockLedgerItems.map((item, index) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="font-medium">{index + 1}</TableCell>
-                        <TableCell className="font-medium">
-                          {item.item?.name || `Item #${item.item_id}`}
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          {item.quantity.toLocaleString()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {item.unit?.name || `Unit #${item.unit_id}`}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
               </div>
             )}
           </div>

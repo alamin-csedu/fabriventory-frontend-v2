@@ -84,19 +84,19 @@ export function ViewStockTransferDialog({
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Item</span>
-              <span>{item?.name ?? `#${data.item_id}`}</span>
+              <span>{item?.name ?? "—"}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Job</span>
-              <span>{job?.name ?? `#${data.job_id}`}</span>
+              <span>{job?.name ?? "—"}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Storage</span>
               <span title={storage ? (storage.address ?? storage.name) : undefined}>
                 {data.storage_id != null
                   ? (storage
-                    ? (storage.address ? getFirstNStoragePathSegments(storage.address, 3) : storage.name) ?? `#${data.storage_id}`
-                    : `#${data.storage_id}`)
+                    ? (storage.address ? getFirstNStoragePathSegments(storage.address, 3) : storage.name) ?? "—"
+                    : "—")
                   : "—"}
               </span>
             </div>
@@ -106,7 +106,7 @@ export function ViewStockTransferDialog({
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Unit</span>
-              <span>{data.unit_id != null ? (unit?.name ?? `#${data.unit_id}`) : "—"}</span>
+              <span>{data.unit_id != null ? (unit?.name ?? "—") : "—"}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Lot number</span>

@@ -78,10 +78,6 @@ export function ViewSalesContractDialog({ contract, open, onOpenChange }: ViewSa
               {getStatusBadge(contract.status)}
             </div>
 
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Contract ID</span>
-              <span className="font-mono text-sm">#{contract.id}</span>
-            </div>
           </div>
 
           <Separator />
@@ -94,10 +90,6 @@ export function ViewSalesContractDialog({ contract, open, onOpenChange }: ViewSa
                 <span className="font-medium">{contract.buyerName}</span>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Buyer ID</span>
-                <span className="font-mono text-sm">#{contract.buyerId}</span>
-              </div>
             </div>
           </div>
 

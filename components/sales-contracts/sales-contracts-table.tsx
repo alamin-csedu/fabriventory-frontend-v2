@@ -192,7 +192,11 @@ export function SalesContractsTable({ searchTerm, statusFilter }: SalesContracts
               </TableRow>
             ) : (
               filteredContracts.map((contract) => (
-                <TableRow key={contract.id}>
+                <TableRow
+                  key={contract.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleView(contract)}
+                >
                   <TableCell className="font-medium font-mono text-sm">{contract.contractNo}</TableCell>
                   <TableCell>{contract.buyerName}</TableCell>
                   <TableCell>{contract.style}</TableCell>
@@ -201,7 +205,7 @@ export function SalesContractsTable({ searchTerm, statusFilter }: SalesContracts
                   <TableCell>{formatCurrency(contract.value)}</TableCell>
                   <TableCell>{getStatusBadge(contract.status)}</TableCell>
                   <TableCell>{formatDate(contract.createdAt)}</TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">

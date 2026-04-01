@@ -49,7 +49,6 @@ export function DeleteJobDialog({ job, open, onOpenChange, onSubmit }) {
             <h4 className="font-medium mb-2">Job Details:</h4>
             <p><strong>Name:</strong> {job.name}</p>
             <p><strong>Description:</strong> {job.description || "N/A"}</p>
-            <p><strong>Customer ID:</strong> {job.customer_id}</p>
           </div>
         </div>
 

@@ -5,9 +5,9 @@ import { AddItemDialog } from "@/components/items/add-item-dialog"
 import { EditItemDialog } from "@/components/items/edit-item-dialog"
 import { DeleteItemDialog } from "@/components/items/delete-item-dialog"
 import { ViewItemDialog } from "@/components/items/view-item-dialog"
-import { ItemsPageSkeleton, ItemsTableSkeleton, StatsCardsSkeleton } from "@/components/items/items-page-skeleton"
+import { ItemsPageSkeleton, ItemsTableSkeleton } from "@/components/items/items-page-skeleton"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { 
   Pagination, 
@@ -17,8 +17,8 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, Package, TrendingUp, Tag } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Plus, Search } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { OpenModalFromAction } from "@/components/open-modal-from-action"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
@@ -31,12 +31,8 @@ export default function ItemsPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null)
   const [items, setItems] = useState([])
-  const [stats, setStats] = useState({
-    totalItems: 0,
-    activeItems: 0,
-    totalCategories: 0
-  })
   const [loading, setLoading] = useState(true)
+  const initialLoadDone = useRef(false)
   const [tableLoading, setTableLoading] = useState(false)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
@@ -51,6 +47,9 @@ export default function ItemsPage() {
   // Centralized API functions
   const fetchItems = async () => {
     try {
+      if (!initialLoadDone.current) {
+        setLoading(true)
+      }
       const response = await apiService.getItems({
         page: currentPage,
         size: perPage,
@@ -74,26 +73,10 @@ export default function ItemsPage() {
     } finally {
       setTableLoading(false)
       setIsSearching(false)
-    }
-  }
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true)
-      const response = await apiService.getItems({ page: 1, size: 10 })
-      
-      if (response.data?.data) {
-        const items = response.data.data
-        setStats({
-          totalItems: items.length,
-          activeItems: items.length, // All items are considered active for now
-          totalCategories: new Set(items.map(item => item.category_id)).size
-        })
+      if (!initialLoadDone.current) {
+        setLoading(false)
+        initialLoadDone.current = true
       }
-    } catch (error) {
-      console.error('Error fetching item stats:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -103,7 +86,6 @@ export default function ItemsPage() {
       toast.success("Item created successfully")
       setIsAddDialogOpen(false)
       await fetchItems()
-      await fetchStats()
     } catch (error) {
       console.error('Error creating item:', error)
       toast.error("Failed to create item. Please try again.")
@@ -118,7 +100,6 @@ export default function ItemsPage() {
       setIsEditDialogOpen(false)
       setSelectedItem(null)
       await fetchItems()
-      await fetchStats()
     } catch (error) {
       console.error('Error updating item:', error)
       toast.error("Failed to update item. Please try again.")
@@ -133,7 +114,6 @@ export default function ItemsPage() {
       setIsDeleteDialogOpen(false)
       setSelectedItem(null)
       await fetchItems()
-      await fetchStats()
     } catch (error) {
       console.error('Error deleting item:', error)
       toast.error("Failed to delete item. Please try again.")
@@ -159,12 +139,7 @@ export default function ItemsPage() {
     fetchItems()
   }, [debouncedSearchTerm, currentPage, perPage, sorting.sortBy, sorting.sortOrder])
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
   const handleRefresh = () => {
-    fetchStats()
     fetchItems()
   }
 
@@ -214,58 +189,6 @@ export default function ItemsPage() {
           Add Item
         </Button>
       </div>
-
-      {/* Stats Cards */}
-      {loading ? (
-        <StatsCardsSkeleton />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalItems}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Active</span> items
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Items</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.activeItems}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Currently</span> active
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Categories</CardTitle>
-              <Tag className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalCategories}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Different</span> categories
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Search and Filters */}
       <Card>

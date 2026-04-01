@@ -5,9 +5,9 @@ import { AddJobDialog } from "@/components/jobs/add-job-dialog"
 import { EditJobDialog } from "@/components/jobs/edit-job-dialog"
 import { DeleteJobDialog } from "@/components/jobs/delete-job-dialog"
 import { ViewJobDialog } from "@/components/jobs/view-job-dialog"
-import { JobsPageSkeleton, JobsTableSkeleton, StatsCardsSkeleton } from "@/components/jobs/jobs-page-skeleton"
+import { JobsPageSkeleton, JobsTableSkeleton } from "@/components/jobs/jobs-page-skeleton"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { 
   Pagination, 
@@ -17,8 +17,8 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, FileText, TrendingUp, Users } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Plus, Search } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { OpenModalFromAction } from "@/components/open-modal-from-action"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
@@ -31,12 +31,8 @@ export default function JobsPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedJob, setSelectedJob] = useState(null)
   const [jobs, setJobs] = useState([])
-  const [stats, setStats] = useState({
-    totalJobs: 0,
-    activeJobs: 0,
-    totalCustomers: 0
-  })
   const [loading, setLoading] = useState(true)
+  const initialLoadDone = useRef(false)
   const [tableLoading, setTableLoading] = useState(false)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
@@ -51,6 +47,9 @@ export default function JobsPage() {
   // Centralized API functions
   const fetchJobs = async () => {
     try {
+      if (!initialLoadDone.current) {
+        setLoading(true)
+      }
       const response = await apiService.getJobs({
         page: currentPage,
         size: perPage,
@@ -74,26 +73,10 @@ export default function JobsPage() {
     } finally {
       setTableLoading(false)
       setIsSearching(false)
-    }
-  }
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true)
-      const response = await apiService.getJobs({ page: 1, size: 10 })
-      
-      if (response.data?.data) {
-        const jobs = response.data.data
-        setStats({
-          totalJobs: jobs.length,
-          activeJobs: jobs.length, // All jobs are considered active for now
-          totalCustomers: new Set(jobs.map(job => job.customer_id)).size
-        })
+      if (!initialLoadDone.current) {
+        setLoading(false)
+        initialLoadDone.current = true
       }
-    } catch (error) {
-      console.error('Error fetching job stats:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -103,7 +86,6 @@ export default function JobsPage() {
       toast.success("Job created successfully")
       setIsAddDialogOpen(false)
       await fetchJobs()
-      await fetchStats()
     } catch (error) {
       console.error('Error creating job:', error)
       toast.error("Failed to create job. Please try again.")
@@ -118,7 +100,6 @@ export default function JobsPage() {
       setIsEditDialogOpen(false)
       setSelectedJob(null)
       await fetchJobs()
-      await fetchStats()
     } catch (error) {
       console.error('Error updating job:', error)
       toast.error("Failed to update job. Please try again.")
@@ -133,7 +114,6 @@ export default function JobsPage() {
       setIsDeleteDialogOpen(false)
       setSelectedJob(null)
       await fetchJobs()
-      await fetchStats()
     } catch (error) {
       console.error('Error deleting job:', error)
       toast.error("Failed to delete job. Please try again.")
@@ -159,12 +139,7 @@ export default function JobsPage() {
     fetchJobs()
   }, [debouncedSearchTerm, currentPage, perPage, sorting.sortBy, sorting.sortOrder])
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
   const handleRefresh = () => {
-    fetchStats()
     fetchJobs()
   }
 
@@ -214,58 +189,6 @@ export default function JobsPage() {
           Add Job
         </Button>
       </div>
-
-      {/* Stats Cards */}
-      {loading ? (
-        <StatsCardsSkeleton />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalJobs}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Active</span> jobs
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.activeJobs}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Currently</span> active
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Customers</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalCustomers}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Different</span> customers
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Search and Filters */}
       <Card>

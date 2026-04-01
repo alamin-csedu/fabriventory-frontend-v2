@@ -5,8 +5,9 @@ import { AddUnitDialog } from "@/components/units/add-unit-dialog"
 import { EditUnitDialog } from "@/components/units/edit-unit-dialog"
 import { DeleteUnitDialog } from "@/components/units/delete-unit-dialog"
 import { ViewUnitDialog } from "@/components/units/view-unit-dialog"
+import { SettingsListPageSkeleton } from "@/components/settings/settings-list-page-skeleton"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { 
   Pagination, 
@@ -16,8 +17,8 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, Ruler, TrendingUp, Package } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Plus, Search } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -29,12 +30,8 @@ export default function UnitsPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedUnit, setSelectedUnit] = useState(null)
   const [units, setUnits] = useState([])
-  const [stats, setStats] = useState({
-    totalUnits: 0,
-    activeUnits: 0,
-    totalUsage: 0
-  })
   const [loading, setLoading] = useState(true)
+  const initialLoadDone = useRef(false)
   const [tableLoading, setTableLoading] = useState(false)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
@@ -49,6 +46,9 @@ export default function UnitsPage() {
   // Centralized API functions
   const fetchUnits = async () => {
     try {
+      if (!initialLoadDone.current) {
+        setLoading(true)
+      }
       const response = await apiService.getUnits({
         page: currentPage,
         size: perPage,
@@ -72,26 +72,10 @@ export default function UnitsPage() {
     } finally {
       setTableLoading(false)
       setIsSearching(false)
-    }
-  }
-  
-  const fetchStats = async () => {
-    try {
-      setLoading(true)
-      const response = await apiService.getUnits({ page: 1, size: 10 })
-      
-      if (response.data?.data) {
-        const units = response.data.data
-        setStats({
-          totalUnits: units.length,
-          activeUnits: units.length, // All units are considered active for now
-          totalUsage: 0 // This would need to be calculated from usage
-        })
+      if (!initialLoadDone.current) {
+        setLoading(false)
+        initialLoadDone.current = true
       }
-    } catch (error) {
-      console.error('Error fetching unit stats:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -101,7 +85,6 @@ export default function UnitsPage() {
       toast.success("Unit created successfully")
       setIsAddDialogOpen(false)
       await fetchUnits()
-      await fetchStats()
     } catch (error) {
       console.error('Error creating unit:', error)
       toast.error("Failed to create unit. Please try again.")
@@ -116,7 +99,6 @@ export default function UnitsPage() {
       setIsEditDialogOpen(false)
       setSelectedUnit(null)
       await fetchUnits()
-      await fetchStats()
     } catch (error) {
       console.error('Error updating unit:', error)
       toast.error("Failed to update unit. Please try again.")
@@ -131,7 +113,6 @@ export default function UnitsPage() {
       setIsDeleteDialogOpen(false)
       setSelectedUnit(null)
       await fetchUnits()
-      await fetchStats()
     } catch (error) {
       console.error('Error deleting unit:', error)
       toast.error("Failed to delete unit. Please try again.")
@@ -157,12 +138,7 @@ export default function UnitsPage() {
     fetchUnits()
   }, [debouncedSearchTerm, currentPage, perPage, sorting.sortBy, sorting.sortOrder])
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
   const handleRefresh = () => {
-    fetchStats()
     fetchUnits()
   }
 
@@ -189,6 +165,10 @@ export default function UnitsPage() {
     setIsViewDialogOpen(true)
   }
 
+  if (loading && !debouncedSearchTerm) {
+    return <SettingsListPageSkeleton />
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -201,71 +181,6 @@ export default function UnitsPage() {
           Add Unit
         </Button>
       </div>
-
-      {/* Stats Cards */}
-      {loading ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
-                <div className="h-4 w-4 bg-gray-200 rounded animate-pulse"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse mb-2"></div>
-                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Units</CardTitle>
-              <Ruler className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalUnits}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Available</span> units
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Units</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.activeUnits}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Currently</span> in use
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Usage</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalUsage}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Items</span> using units
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Search and Filters */}
       <Card>

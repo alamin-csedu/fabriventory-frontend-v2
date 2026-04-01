@@ -5,9 +5,17 @@ import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Plus, Edit, Eye, Calendar, Package, Truck, CheckCircle, Clock, AlertCircle, TrendingUp, BarChart3 } from "lucide-react"
+import {
+  ArrowLeft,
+  Plus,
+  Edit,
+  Eye,
+  Calendar,
+  Package,
+  Truck,
+} from "lucide-react"
 import { apiService } from "@/lib/api"
+import { formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 import { AddStockLedgerDialog } from "@/components/stock-ledger/add-stock-ledger-dialog"
 import { EditStockLedgerDialog } from "@/components/stock-ledger/edit-stock-ledger-dialog"
@@ -58,24 +66,6 @@ export default function StockLedgerTimelinePage() {
     setIsAddDialogOpen(true)
   }
 
-  const getStatusIcon = (type, index) => {
-    if (type === "Booking") {
-      return <Package className="h-5 w-5 text-blue-600" />
-    } else if (type === "Delivery") {
-      return <Truck className="h-5 w-5 text-green-600" />
-    }
-    return <Clock className="h-5 w-5 text-gray-600" />
-  }
-
-  const getStatusColor = (type) => {
-    if (type === "Booking") {
-      return "bg-blue-100 text-blue-800 border-blue-200"
-    } else if (type === "Delivery") {
-      return "bg-green-100 text-green-800 border-green-200"
-    }
-    return "bg-gray-100 text-gray-800 border-gray-200"
-  }
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -84,6 +74,20 @@ export default function StockLedgerTimelinePage() {
       hour: "2-digit",
       minute: "2-digit",
     })
+  }
+
+  const formatDeliveryDateParts = (dateString) => {
+    const d = new Date(dateString)
+    if (Number.isNaN(d.getTime())) return { date: "—", time: "" }
+    return {
+      date: d.toLocaleDateString("en-US", {
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      }),
+      time: d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+    }
   }
 
   if (loading) {
@@ -97,31 +101,48 @@ export default function StockLedgerTimelinePage() {
   const bookingEntry = timeline.find((entry) => entry.type === "Booking")
   const deliveryEntries = timeline.filter((entry) => entry.type === "Delivery")
 
+  const jobName = bookingEntry?.job?.name?.trim()
+  const vendorName = bookingEntry?.vendor?.name?.trim()
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.back()}
-            className="gap-2 shrink-0"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Back</span>
-          </Button>
-          <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Stock Ledger Timeline</h1>
-            <p className="text-muted-foreground text-pretty text-sm">
-              {bookingEntry?.job?.name || "Timeline Details"}
-            </p>
+      <div className="rounded-2xl border border-border/70 bg-gradient-to-br from-card via-card to-muted/25 px-4 py-5 shadow-sm sm:px-6 sm:py-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex min-w-0 gap-3 sm:gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => router.back()}
+              className="h-10 w-10 shrink-0 rounded-xl border-border/80 bg-background/80 shadow-sm hover:bg-muted"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="min-w-0 flex-1 space-y-1 pt-0.5">
+              <h1 className="text-balance text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl">
+                { "Booking Details"}
+              </h1>
+              <p className="text-pretty text-sm leading-relaxed text-muted-foreground">
+                {jobName}
+                {vendorName ? (
+                  <span className="mt-1 block text-xs text-muted-foreground/90">
+                    Vendor: <span className="font-medium text-foreground/80">{vendorName}</span>
+                  </span>
+                ) : null}
+              </p>
+            </div>
           </div>
+          <Button
+            type="button"
+            onClick={handleAddDelivery}
+            className="h-10 w-full shrink-0 gap-2 shadow-sm sm:w-auto sm:self-center"
+          >
+            <Plus className="h-4 w-4" />
+            Add delivery
+          </Button>
         </div>
-        <Button onClick={handleAddDelivery} className="gap-2 shrink-0">
-          <Plus className="h-4 w-4" />
-          Add Delivery
-        </Button>
       </div>
 
       {/* Booking Details */}
@@ -138,10 +159,10 @@ export default function StockLedgerTimelinePage() {
               <div>
                 <h4 className="font-semibold mb-2">Job Information</h4>
                 <p className="text-sm text-muted-foreground mb-1">
-                  <strong>Job:</strong> {bookingEntry.job.name}
+                  <strong>Job:</strong> {bookingEntry.job?.name ?? "—"}
                 </p>
                 <p className="text-sm text-muted-foreground mb-1">
-                  <strong>Description:</strong> {bookingEntry.job.description}
+                  <strong>Description:</strong> {bookingEntry.job?.description ?? "—"}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   <strong>Created:</strong> {formatDate(bookingEntry.created_at)}
@@ -150,13 +171,13 @@ export default function StockLedgerTimelinePage() {
               <div>
                 <h4 className="font-semibold mb-2">Vendor Information</h4>
                 <p className="text-sm text-muted-foreground mb-1">
-                  <strong>Vendor:</strong> {bookingEntry.vendor.name}
+                  <strong>Vendor:</strong> {bookingEntry.vendor?.name ?? "—"}
                 </p>
                 <p className="text-sm text-muted-foreground mb-1">
-                  <strong>Email:</strong> {bookingEntry.vendor.email}
+                  <strong>Email:</strong> {bookingEntry.vendor?.email ?? "—"}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  <strong>Address:</strong> {bookingEntry.vendor.address}
+                  <strong>Address:</strong> {bookingEntry.vendor?.address ?? "—"}
                 </p>
               </div>
             </div>
@@ -178,30 +199,34 @@ export default function StockLedgerTimelinePage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {bookingEntry.items.map((item, index) => (
-                        <tr key={item.id} className="border-b hover:bg-muted/30">
+                      {bookingEntry.items.map((item, index) => {
+                        const pct = Number(item.item_stats?.percentage ?? 0)
+                        const delivered = item.item_stats?.delivered ?? 0
+                        const remaining = item.item_stats?.remaining ?? 0
+                        return (
+                        <tr key={item.id ?? index} className="border-b hover:bg-muted/30">
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
                               <Package className="h-4 w-4 text-blue-600" />
                               <div>
-                                <div className="font-medium">{item.item.name}</div>
-                                <div className="text-xs text-muted-foreground">{item.unit.name}</div>
+                                <div className="font-medium">{item.item?.name ?? "—"}</div>
+                                <div className="text-xs text-muted-foreground">{item.unit?.name ?? "—"}</div>
                               </div>
                             </div>
                           </td>
                           <td className="py-3 px-4 text-center">
                             <div className="font-semibold text-blue-600">
-                              {item.quantity.toLocaleString()}
+                              {formatQuantity(item.quantity ?? 0)}
                             </div>
                           </td>
                           <td className="py-3 px-4 text-center">
                             <div className="font-semibold text-green-600">
-                              {item.item_stats.delivered.toLocaleString()}
+                              {formatQuantity(delivered)}
                             </div>
                           </td>
                           <td className="py-3 px-4 text-center">
                             <div className="font-semibold text-orange-600">
-                              {item.item_stats.remaining.toLocaleString()}
+                              {formatQuantity(remaining)}
                             </div>
                           </td>
                           <td className="py-3 px-4">
@@ -209,11 +234,11 @@ export default function StockLedgerTimelinePage() {
                               <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div 
                                   className="bg-primary h-2 rounded-full transition-all duration-300"
-                                  style={{ width: `${item.item_stats.percentage}%` }}
+                                  style={{ width: `${pct}%` }}
                                 />
                               </div>
                               <div className="text-xs text-center text-muted-foreground">
-                                {item.item_stats.percentage}%
+                                {formatQuantity(pct)}%
                               </div>
                             </div>
                           </td>
@@ -221,19 +246,20 @@ export default function StockLedgerTimelinePage() {
                             <Badge 
                               variant="outline"
                               className={
-                                item.item_stats.percentage === 100
+                                pct === 100
                                   ? "bg-green-100 text-green-800 border-green-200"
-                                  : item.item_stats.percentage > 0
+                                  : pct > 0
                                   ? "bg-blue-100 text-blue-800 border-blue-200"
                                   : "bg-gray-100 text-gray-800 border-gray-200"
                               }
                             >
-                              {item.item_stats.percentage === 100 ? "Complete" : 
-                               item.item_stats.percentage > 0 ? "In Progress" : "Pending"}
+                              {pct === 100 ? "Complete" : 
+                               pct > 0 ? "In Progress" : "Pending"}
                             </Badge>
                           </td>
                         </tr>
-                      ))}
+                        )
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -243,85 +269,120 @@ export default function StockLedgerTimelinePage() {
         </Card>
       )}
 
-      {/* Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Delivery Timeline
-          </CardTitle>
-          <CardDescription>
-            Track all deliveries and their status
-          </CardDescription>
+      {/* Delivery timeline */}
+      <Card className="overflow-hidden border-border/80 shadow-sm">
+        <CardHeader className="border-b border-border/60 bg-muted/20 px-4 py-4 sm:px-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div className="space-y-1">
+                <CardTitle className="text-lg font-semibold tracking-tight sm:text-xl">
+                  Delivery timeline
+                </CardTitle>
+                <CardDescription className="text-sm leading-relaxed">
+                  Chronological record of each delivery for this booking.
+                </CardDescription>
+              </div>
+            </div>
+            {deliveryEntries.length > 0 && (
+              <Badge variant="secondary" className="w-fit shrink-0 font-medium tabular-nums">
+                {deliveryEntries.length}{" "}
+                {deliveryEntries.length === 1 ? "delivery" : "deliveries"}
+              </Badge>
+            )}
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {deliveryEntries.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Truck className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <p>No deliveries yet</p>
-              <p className="text-sm">Add a delivery to start tracking</p>
+            <div className="mx-4 my-6 rounded-xl border border-dashed border-border/80 bg-muted/15 px-5 py-9 text-center sm:mx-5">
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50 ring-1 ring-border/60">
+                <Truck className="h-6 w-6 text-muted-foreground/70" />
+              </div>
+              <p className="text-sm font-medium text-foreground">No deliveries recorded yet</p>
+              <p className="mx-auto mt-1.5 max-w-sm text-xs text-muted-foreground sm:text-sm">
+                When you add a delivery, it will appear here in chronological order.
+              </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {deliveryEntries.map((entry, index) => (
-                <div key={entry.id} className="relative">
-                  {index < deliveryEntries.length - 1 && (
-                    <div className="absolute left-6 top-12 w-0.5 h-8 bg-border" />
-                  )}
-                    <div className="flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg border bg-card">
-                    <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-background border-2 border-primary flex items-center justify-center">
-                      {getStatusIcon(entry.type, index)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                        <h4 className="font-semibold text-sm sm:text-base">Delivered on {formatDate(entry.created_at)}</h4>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={getStatusColor(entry.type)}>
-                            {entry.type}
-                          </Badge>
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleView(entry)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleEdit(entry)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
+            <div className="relative px-3 py-4 sm:px-5 sm:py-5">
+              {/* Continuous vertical rail */}
+              <div
+                className="absolute left-[1.625rem] top-8 bottom-8 hidden w-px bg-gradient-to-b from-primary/35 via-border to-transparent sm:left-[1.875rem] sm:block"
+                aria-hidden
+              />
+              <ul className="relative space-y-0">
+                {deliveryEntries.map((entry, index) => {
+                  const { date, time } = formatDeliveryDateParts(entry.created_at)
+                  return (
+                    <li key={entry.id ?? index} className="relative flex gap-3 pb-6 last:pb-0 sm:gap-4 sm:pb-7">
+                      {/* Step node */}
+                      <div className="relative z-[1] flex shrink-0 flex-col items-center">
+                        <div
+                          className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-primary/35 bg-gradient-to-br from-primary/15 to-primary/5 text-primary shadow-sm ring-2 ring-background sm:h-10 sm:w-10"
+                          aria-hidden
+                        >
+                          <Truck className="h-4 w-4 sm:h-[18px] sm:w-[18px]" strokeWidth={2} />
+                        </div>
+                        <span className="mt-1.5 rounded-full bg-muted px-1.5 py-px text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          #{index + 1}
+                        </span>
+                      </div>
+
+                      {/* Card */}
+                      <div className="min-w-0 flex-1 pt-px">
+                        <div className="rounded-xl border border-border/70 bg-card p-3 shadow-sm transition-shadow hover:shadow-md sm:p-3.5">
+                          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                            <div className="min-w-0 space-y-1">
+                              <Badge
+                                variant="outline"
+                                className="w-fit gap-1 border-emerald-200/80 bg-emerald-50 px-2 py-px text-[9px] font-semibold uppercase tracking-wider text-emerald-900 shadow-none dark:border-emerald-800/80 dark:bg-emerald-950/40 dark:text-emerald-100"
+                              >
+                                <Truck className="h-3 w-3" aria-hidden />
+                                Delivered
+                              </Badge>
+                              <p className="text-sm font-semibold tabular-nums leading-snug text-foreground sm:text-base">
+                                {date}
+                                {time ? (
+                                  <span className="font-normal text-muted-foreground">
+                                    {" "}
+                                    · {time}
+                                  </span>
+                                ) : null}
+                              </p>
+                            </div>
+                            <div className="flex shrink-0 flex-wrap items-center gap-1.5 sm:justify-end">
+                              <div className="flex items-center gap-0.5 rounded-md border border-border/60 bg-muted/30 p-px">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => handleView(entry)}
+                                >
+                                  <Eye className="mr-1 h-3 w-3" />
+                                  View
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 px-2 text-xs"
+                                  onClick={() => handleEdit(entry)}
+                                >
+                                  <Edit className="mr-1 h-3 w-3" />
+                                  Edit
+                                </Button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="grid gap-2 text-sm text-muted-foreground">
-                        {entry.payment_reference && (
-                          <p><strong>Payment Reference:</strong> {entry.payment_reference}</p>
-                        )}
-                        {entry.delivery_receipt_url && (
-                          <p><strong>Receipt:</strong> 
-                            <a 
-                              href={
-                                entry.delivery_receipt_url.startsWith('http') 
-                                  ? entry.delivery_receipt_url 
-                                  : `${process.env.NEXT_PUBLIC_FILE_URL}${entry.delivery_receipt_url}`
-                              }
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline ml-1"
-                            >
-                              View Receipt
-                            </a>
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                    </li>
+                  )
+                })}
+              </ul>
             </div>
           )}
         </CardContent>

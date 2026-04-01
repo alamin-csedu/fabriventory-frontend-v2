@@ -1,7 +1,6 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -9,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Calendar, User, Globe } from "lucide-react"
+import { Calendar, Globe } from "lucide-react"
 
 export const ViewCategoryDialog = ({ open, onOpenChange, category }) => {
   const formatDate = (dateString) => {
@@ -41,10 +40,6 @@ export const ViewCategoryDialog = ({ open, onOpenChange, category }) => {
                 <span className="text-sm font-medium text-muted-foreground">Name</span>
                 <span className="text-sm font-medium">{category?.name}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm font-medium text-muted-foreground">ID</span>
-                <Badge variant="secondary">{category?.id}</Badge>
-              </div>
             </div>
           </div>
 
@@ -57,18 +52,6 @@ export const ViewCategoryDialog = ({ open, onOpenChange, category }) => {
                 <span className="text-sm font-medium text-muted-foreground">Created:</span>
                 <span className="text-sm">{formatDate(category?.created_at)}</span>
               </div>
-              <div className="flex items-center gap-2 py-2 border-b">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-muted-foreground">Last Updated:</span>
-                <span className="text-sm">{formatDate(category?.updated_at)}</span>
-              </div>
-              {category?.created_by && (
-                <div className="flex items-center gap-2 py-2 border-b">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Created By:</span>
-                  <span className="text-sm">User ID {category.created_by}</span>
-                </div>
-              )}
               {category?.created_ip && (
                 <div className="flex items-center gap-2 py-2 border-b">
                   <Globe className="h-4 w-4 text-muted-foreground" />

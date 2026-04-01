@@ -71,11 +71,15 @@ export const ItemsTable = ({
             </TableRow>
           ) : (
             items.map((item) => (
-              <TableRow key={item.id}>
+              <TableRow
+                key={item.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => onView(item)}
+              >
                 <TableCell className="font-medium">{item.name}</TableCell>
                 <TableCell>
                   <Badge variant="outline">
-                    {item.category?.name || `Category #${item.category_id}`}
+                    {item.category?.name || "—"}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -93,7 +97,7 @@ export const ItemsTable = ({
                   )}
                 </TableCell>
                 <TableCell>{formatDate(item.created_at)}</TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">

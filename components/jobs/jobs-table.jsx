@@ -2,7 +2,6 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, Edit, Trash2, Eye, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 
@@ -54,7 +53,6 @@ export const JobsTable = ({
               </div>
             </TableHead>
             <TableHead>Description</TableHead>
-            <TableHead>Customer ID</TableHead>
             <TableHead 
               className="cursor-pointer hover:bg-muted/50"
               onClick={() => handleSort('created_at')}
@@ -70,22 +68,23 @@ export const JobsTable = ({
         <TableBody>
           {jobs.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+              <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                 No jobs found
               </TableCell>
             </TableRow>
           ) : (
             jobs.map((job) => (
-              <TableRow key={job.id}>
+              <TableRow
+                key={job.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => onView(job)}
+              >
                 <TableCell className="font-medium">{job.name}</TableCell>
                 <TableCell className="max-w-[300px] truncate">
                   {truncateText(job.description)}
                 </TableCell>
-                <TableCell>
-                  <Badge variant="outline">#{job.customer_id}</Badge>
-                </TableCell>
                 <TableCell>{formatDate(job.created_at)}</TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="h-8 w-8 p-0">

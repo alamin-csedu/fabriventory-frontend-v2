@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Combobox } from "@/components/ui/combobox"
@@ -23,8 +23,21 @@ import {
 } from "@/components/ui/pagination"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
-import { Search, Boxes, ChevronDown, ChevronRight, Package, Warehouse, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
-import { cn, getFirstNStoragePathSegments } from "@/lib/utils"
+import {
+  Search,
+  ChevronDown,
+  ChevronRight,
+  Package,
+  Warehouse,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Tag,
+  Palette,
+  MapPin,
+  Layers,
+} from "lucide-react"
+import { cn, formatQuantity, getFirstNStoragePathSegments } from "@/lib/utils"
 
 interface StorageStockRow {
   storage_id: number
@@ -36,7 +49,14 @@ interface StorageStockRow {
 
 interface ItemStockRow {
   item_id: number
-  item: { id: number; name: string; category_id?: number; color_id?: number }
+  item: {
+    id: number
+    name: string
+    category_id?: number
+    color_id?: number
+    category?: { id: number; name: string }
+    color?: { id: number; name: string; color_code?: string }
+  }
   quantity: number
   unit_id: number
   unit: { id: number; name: string }
@@ -196,59 +216,70 @@ export default function StocksPage() {
     })
   }
 
+  const qtyLabel = (qty: number, unitName: string) =>
+    unitName ? `${formatQuantity(qty)} ${unitName}` : formatQuantity(qty)
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const from = total === 0 ? 0 : (currentPage - 1) * pageSize + 1
   const to = Math.min(currentPage * pageSize, total)
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-balance">Stocks</h1>
-        <p className="text-muted-foreground text-pretty">
-          View stock grouped by items or by storage, with pagination and filters
-        </p>
+    <div className="space-y-8">
+      <div className="relative">
+        <div className="absolute -left-1 top-1 bottom-1 w-1 rounded-full bg-gradient-to-b from-sky-500 via-primary to-violet-500 opacity-90" aria-hidden />
+        <div className="pl-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Inventory
+          </p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-balance sm:text-3xl">
+            Stocks
+          </h1>
+          <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground text-pretty">
+            Group by item or storage, drill into locations, and scan quantities at a glance.
+          </p>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden rounded-2xl border-border/60 shadow-lg shadow-black/[0.04] ring-1 ring-black/[0.04] dark:ring-white/10">
+        <CardHeader className="border-b border-border/50 bg-gradient-to-r from-muted/50 via-muted/30 to-transparent px-4 py-5 sm:px-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex rounded-lg border-2 border-input p-1 bg-muted/30">
+            <div className="inline-flex rounded-xl border border-border/80 bg-background/80 p-1 shadow-inner backdrop-blur-sm">
               <Button
                 variant={groupBy === "item" ? "secondary" : "ghost"}
                 size="sm"
                 className={cn(
-                  "gap-2",
-                  groupBy === "item" ? "shadow-sm" : ""
+                  "gap-2 rounded-lg transition-all",
+                  groupBy === "item" ? "shadow-sm ring-1 ring-border/60" : ""
                 )}
                 onClick={() => handleGroupByChange("item")}
               >
                 <Package className="h-4 w-4" />
-                By Items
+                By items
               </Button>
               <Button
                 variant={groupBy === "storage" ? "secondary" : "ghost"}
                 size="sm"
                 className={cn(
-                  "gap-2",
-                  groupBy === "storage" ? "shadow-sm" : ""
+                  "gap-2 rounded-lg transition-all",
+                  groupBy === "storage" ? "shadow-sm ring-1 ring-border/60" : ""
                 )}
                 onClick={() => handleGroupByChange("storage")}
               >
                 <Warehouse className="h-4 w-4" />
-                By Storage
+                By storage
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-4">
+        <CardContent className="space-y-5 px-4 py-5 sm:px-6">
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border/50 bg-muted/20 p-3 sm:gap-4">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder="Search by quantity..."
+                placeholder="Search by item"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="h-10 border-border/60 bg-background pl-10 shadow-sm"
               />
             </div>
             {groupBy === "item" && (
@@ -282,16 +313,16 @@ export default function StocksPage() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            <div className="flex items-center justify-center py-16">
+              <div className="h-9 w-9 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
           ) : (
             <>
-              <div className="rounded-md border overflow-x-auto">
+              <div className="overflow-x-auto rounded-xl border border-border/60 bg-background/50 shadow-inner">
                 {groupBy === "item" ? (
                   <Table className="min-w-[600px]">
                     <TableHeader>
-                      <TableRow className="border-b bg-muted/50 hover:bg-muted/50">
+                      <TableRow className="border-b bg-gradient-to-r from-muted/60 via-muted/40 to-transparent hover:bg-muted/50">
                         <TableHead className="w-12 px-3 py-3 font-semibold" />
                         <TableHead className="min-w-[200px] px-3 py-3 font-semibold">
                           <Button
@@ -337,20 +368,36 @@ export default function StocksPage() {
                         dataItem.flatMap((row) => {
                           const isOpen = expandedRows.has(row.item_id)
                           const unitName = row.storages?.[0]?.unit?.name ?? ""
-                          const quantityStr = unitName
-                            ? `${row.total_quantity} ${unitName}`
-                            : String(row.total_quantity)
+                          const quantityStr = qtyLabel(row.total_quantity, unitName)
                           return [
                             <TableRow
                               key={row.item_id}
-                              className="border-b transition-colors hover:bg-muted/30"
+                              className={cn(
+                                "cursor-pointer border-b transition-colors odd:bg-muted/[0.25] hover:bg-muted/45",
+                                isOpen &&
+                                  "bg-primary/[0.12] odd:bg-primary/[0.12] hover:bg-primary/[0.16]"
+                              )}
+                              onClick={() => toggleRow(row.item_id)}
+                              data-state={isOpen ? "open" : "closed"}
                             >
-                              <TableCell className="w-12 px-3 py-2.5 align-middle">
+                              <TableCell
+                                className={cn(
+                                  "w-12 px-3 py-2.5 align-middle",
+                                  isOpen && "border-l-[3px] border-l-primary"
+                                )}
+                              >
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 shrink-0"
-                                  onClick={() => toggleRow(row.item_id)}
+                                  className={cn(
+                                    "h-8 w-8 shrink-0",
+                                    isOpen &&
+                                      "text-primary hover:bg-primary/15 hover:text-primary"
+                                  )}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    toggleRow(row.item_id)
+                                  }}
                                 >
                                   {isOpen ? (
                                     <ChevronDown className="h-4 w-4" />
@@ -361,59 +408,132 @@ export default function StocksPage() {
                               </TableCell>
                               <TableCell className="min-w-[200px] px-3 py-2.5 align-middle">
                                 <div className="flex items-center gap-2">
-                                  <Package className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                  <span className="font-medium">
+                                  <Package
+                                    className={cn(
+                                      "h-4 w-4 shrink-0",
+                                      isOpen ? "text-primary" : "text-muted-foreground"
+                                    )}
+                                  />
+                                  <span
+                                    className={cn(
+                                      "font-medium",
+                                      isOpen && "text-primary"
+                                    )}
+                                  >
                                     {row.item?.name ?? "—"}
                                   </span>
                                 </div>
                               </TableCell>
-                              <TableCell className="min-w-[120px] px-3 py-2.5 align-middle">
+                              <TableCell
+                                className={cn(
+                                  "min-w-[120px] px-3 py-2.5 align-middle",
+                                  isOpen && "text-primary/90"
+                                )}
+                              >
                                 {row.item?.category?.name ?? "—"}
                               </TableCell>
-                              <TableCell className="min-w-[100px] px-3 py-2.5 align-middle">
+                              <TableCell
+                                className={cn(
+                                  "min-w-[100px] px-3 py-2.5 align-middle",
+                                  isOpen && "text-primary/90"
+                                )}
+                              >
                                 {row.item?.color?.name ?? "—"}
                               </TableCell>
-                              <TableCell className="w-40 px-3 py-2.5 text-right align-middle font-medium tabular-nums">
+                              <TableCell
+                                className={cn(
+                                  "w-40 px-3 py-2.5 text-right align-middle font-medium tabular-nums",
+                                  isOpen && "font-semibold text-primary"
+                                )}
+                              >
                                 {quantityStr}
                               </TableCell>
                             </TableRow>,
-                            ...(isOpen && row.storages?.length
-                              ? row.storages.map((s) => {
-                                  const subUnit = s.unit?.name ?? ""
-                                  const subQtyStr = subUnit
-                                    ? `${s.quantity} ${subUnit}`
-                                    : String(s.quantity)
-                                  return (
-                                    <TableRow
-                                      key={`${row.item_id}-${s.storage_id}`}
-                                      className="border-b bg-muted/20 hover:bg-muted/30"
-                                    >
-                                      <TableCell className="w-12 px-3 py-2" />
-                                      <TableCell
-                                        colSpan={1}
-                                        className="min-w-[200px] pl-12 pr-3 py-2 align-middle"
-                                      >
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                          <Warehouse className="h-3.5 w-3.5 shrink-0" />
-                                          <span className="text-sm" title={s.storage ? (s.storage.address ?? s.storage.name) : undefined}>
-                                            {s.storage
-                                              ? (s.storage.address ? getFirstNStoragePathSegments(s.storage.address, 3) : s.storage.name) ?? "—"
-                                              : "—"}
-                                          </span>
+                            ...(isOpen
+                              ? [
+                                  <TableRow
+                                    key={`${row.item_id}-expand`}
+                                    className="border-b bg-transparent hover:bg-transparent"
+                                  >
+                                    <TableCell colSpan={5} className="p-0">
+                                      <div className="relative border-t border-border/60 bg-gradient-to-br from-sky-500/[0.04] via-muted/25 to-violet-500/[0.05] dark:from-sky-400/10 dark:to-violet-500/10">
+                                        <div
+                                          className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-sky-500 via-primary to-violet-500"
+                                          aria-hidden
+                                        />
+                                        <div className="relative pl-4 pr-3 py-4 sm:pl-6 sm:pr-5">
+                                          {row.storages?.length ? (
+                                            <div className="mt-3 overflow-hidden rounded-xl border border-border/50 bg-background/90 shadow-sm">
+                                              <Table>
+                                                <TableHeader>
+                                                  <TableRow className="border-b border-border/50 bg-muted/40 hover:bg-muted/40">
+                                                    <TableHead className="h-10 w-12 px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                      #
+                                                    </TableHead>
+                                                    <TableHead className="h-10 min-w-[200px] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                      Location
+                                                    </TableHead>
+                                                    <TableHead className="h-10 w-40 px-3 py-2 text-right text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                      Qty
+                                                    </TableHead>
+                                                  </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                  {row.storages.map((s, idx) => {
+                                                    const path = s.storage
+                                                      ? s.storage.address
+                                                        ? getFirstNStoragePathSegments(
+                                                            s.storage.address,
+                                                            4
+                                                          )
+                                                        : s.storage.name
+                                                      : "—"
+                                                    const fullPath =
+                                                      s.storage?.address ??
+                                                      s.storage?.name ??
+                                                      ""
+                                                    return (
+                                                      <TableRow
+                                                        key={`${row.item_id}-${s.storage_id}`}
+                                                        className="border-b border-border/30 transition-colors last:border-0 odd:bg-muted/[0.2] hover:bg-muted/40"
+                                                      >
+                                                        <TableCell className="px-2 py-2.5 text-center align-middle">
+                                                          <span className="inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-md bg-muted/60 font-mono text-[11px] font-medium text-muted-foreground">
+                                                            {idx + 1}
+                                                          </span>
+                                                        </TableCell>
+                                                        <TableCell
+                                                          className="max-w-[min(100vw,28rem)] px-3 py-2.5 text-sm leading-snug"
+                                                          title={fullPath || undefined}
+                                                        >
+                                                          <span className="font-medium text-foreground">
+                                                            {path ?? "—"}
+                                                          </span>
+                                                        </TableCell>
+                                                        <TableCell className="px-3 py-2.5 text-right align-middle">
+                                                          <span className="inline-flex rounded-lg bg-primary/10 px-2.5 py-1 text-sm font-semibold tabular-nums text-primary">
+                                                            {qtyLabel(
+                                                              s.quantity,
+                                                              s.unit?.name ?? ""
+                                                            )}
+                                                          </span>
+                                                        </TableCell>
+                                                      </TableRow>
+                                                    )
+                                                  })}
+                                                </TableBody>
+                                              </Table>
+                                            </div>
+                                          ) : (
+                                            <p className="mt-3 rounded-xl border border-dashed border-border/70 bg-background/40 px-4 py-8 text-center text-sm text-muted-foreground">
+                                              No storage breakdown for this item.
+                                            </p>
+                                          )}
                                         </div>
-                                      </TableCell>
-                                      <TableCell className="min-w-[120px] px-3 py-2 align-middle text-muted-foreground text-sm">
-                                        —
-                                      </TableCell>
-                                      <TableCell className="min-w-[100px] px-3 py-2 align-middle text-muted-foreground text-sm">
-                                        —
-                                      </TableCell>
-                                      <TableCell className="w-40 px-3 py-2 text-right align-middle tabular-nums text-sm">
-                                        {subQtyStr}
-                                      </TableCell>
-                                    </TableRow>
-                                  )
-                                })
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>,
+                                ]
                               : []),
                           ]
                         })
@@ -423,7 +543,7 @@ export default function StocksPage() {
                 ) : (
                   <Table className="min-w-[600px]">
                     <TableHeader>
-                      <TableRow className="border-b bg-muted/50 hover:bg-muted/50">
+                      <TableRow className="border-b bg-gradient-to-r from-muted/60 via-muted/40 to-transparent hover:bg-muted/50">
                         <TableHead className="w-12 px-3 py-3 font-semibold" />
                         <TableHead className="min-w-[220px] px-3 py-3 font-semibold">
                           <Button
@@ -463,20 +583,42 @@ export default function StocksPage() {
                         dataStorage.flatMap((row) => {
                           const isOpen = expandedRows.has(row.storage_id)
                           const unitName = row.items?.[0]?.unit?.name ?? ""
-                          const quantityStr = unitName
-                            ? `${row.total_quantity} ${unitName}`
-                            : String(row.total_quantity)
+                          const quantityStr = qtyLabel(row.total_quantity, unitName)
+                          const storageTitle = row.storage
+                            ? row.storage.address
+                              ? getFirstNStoragePathSegments(row.storage.address, 4)
+                              : row.storage.name
+                            : "—"
+                          const storageFull = row.storage?.address ?? row.storage?.name ?? ""
                           return [
                             <TableRow
                               key={row.storage_id}
-                              className="border-b transition-colors hover:bg-muted/30"
+                              className={cn(
+                                "cursor-pointer border-b transition-colors odd:bg-muted/[0.25] hover:bg-muted/45",
+                                isOpen &&
+                                  "bg-primary/[0.12] odd:bg-primary/[0.12] hover:bg-primary/[0.16]"
+                              )}
+                              onClick={() => toggleRow(row.storage_id)}
+                              data-state={isOpen ? "open" : "closed"}
                             >
-                              <TableCell className="w-12 px-3 py-2.5 align-middle">
+                              <TableCell
+                                className={cn(
+                                  "w-12 px-3 py-2.5 align-middle",
+                                  isOpen && "border-l-[3px] border-l-primary"
+                                )}
+                              >
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 shrink-0"
-                                  onClick={() => toggleRow(row.storage_id)}
+                                  className={cn(
+                                    "h-8 w-8 shrink-0",
+                                    isOpen &&
+                                      "text-primary hover:bg-primary/15 hover:text-primary"
+                                  )}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    toggleRow(row.storage_id)
+                                  }}
                                 >
                                   {isOpen ? (
                                     <ChevronDown className="h-4 w-4" />
@@ -487,47 +629,124 @@ export default function StocksPage() {
                               </TableCell>
                               <TableCell className="min-w-[220px] px-3 py-2.5 align-middle">
                                 <div className="flex items-center gap-2">
-                                  <Warehouse className="h-4 w-4 shrink-0 text-muted-foreground" />
-                                  <span className="font-medium" title={row.storage ? (row.storage.address ?? row.storage.name) : undefined}>
-                                    {row.storage
-                                      ? (row.storage.address ? getFirstNStoragePathSegments(row.storage.address, 3) : row.storage.name) ?? "—"
-                                      : "—"}
+                                  <Warehouse
+                                    className={cn(
+                                      "h-4 w-4 shrink-0",
+                                      isOpen ? "text-primary" : "text-muted-foreground"
+                                    )}
+                                  />
+                                  <span
+                                    className={cn(
+                                      "font-medium",
+                                      isOpen && "text-primary"
+                                    )}
+                                    title={storageFull || undefined}
+                                  >
+                                    {storageTitle ?? "—"}
                                   </span>
                                 </div>
                               </TableCell>
-                              <TableCell className="w-40 px-3 py-2.5 text-right align-middle font-medium tabular-nums">
+                              <TableCell
+                                className={cn(
+                                  "w-40 px-3 py-2.5 text-right align-middle font-medium tabular-nums",
+                                  isOpen && "font-semibold text-primary"
+                                )}
+                              >
                                 {quantityStr}
                               </TableCell>
                             </TableRow>,
-                            ...(isOpen && row.items?.length
-                              ? row.items.map((it) => {
-                                  const subUnit = it.unit?.name ?? ""
-                                  const subQtyStr = subUnit
-                                    ? `${it.quantity} ${subUnit}`
-                                    : String(it.quantity)
-                                  return (
-                                    <TableRow
-                                      key={`${row.storage_id}-${it.item_id}`}
-                                      className="border-b bg-muted/20 hover:bg-muted/30"
-                                    >
-                                      <TableCell className="w-12 px-3 py-2" />
-                                      <TableCell
-                                        colSpan={1}
-                                        className="min-w-[220px] pl-12 pr-3 py-2 align-middle"
-                                      >
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                          <Package className="h-3.5 w-3.5 shrink-0" />
-                                          <span className="text-sm">
-                                            {it.item?.name ?? "—"}
-                                          </span>
+                            ...(isOpen
+                              ? [
+                                  <TableRow
+                                    key={`${row.storage_id}-expand`}
+                                    className="border-b bg-transparent hover:bg-transparent"
+                                  >
+                                    <TableCell colSpan={3} className="p-0">
+                                      <div className="relative border-t border-border/60 bg-gradient-to-br from-violet-500/[0.05] via-muted/25 to-sky-500/[0.05] dark:from-violet-500/10 dark:to-sky-400/10">
+                                        <div
+                                          className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-violet-500 via-primary to-sky-500"
+                                          aria-hidden
+                                        />
+                                        <div className="relative pl-4 pr-3 py-4 sm:pl-6 sm:pr-5">
+                                          {row.items?.length ? (
+                                            <div className="overflow-hidden rounded-xl border border-border/50 bg-background/90 shadow-sm">
+                                              <Table>
+                                                <TableHeader>
+                                                  <TableRow className="border-b border-border/50 bg-muted/40 hover:bg-muted/40">
+                                                    <TableHead className="h-10 w-11 px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                      #
+                                                    </TableHead>
+                                                    <TableHead className="h-10 min-w-[160px] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                      Item
+                                                    </TableHead>
+                                                    <TableHead className="h-10 min-w-[100px] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                      Category
+                                                    </TableHead>
+                                                    <TableHead className="h-10 min-w-[88px] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                      Color
+                                                    </TableHead>
+                                                    <TableHead className="h-10 w-36 px-3 py-2 text-right text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                                      Qty
+                                                    </TableHead>
+                                                  </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                  {row.items.map((it, idx) => (
+                                                    <TableRow
+                                                      key={`${row.storage_id}-${it.item_id}`}
+                                                      className="border-b border-border/30 transition-colors last:border-0 odd:bg-muted/[0.2] hover:bg-muted/40"
+                                                    >
+                                                      <TableCell className="px-2 py-2.5 text-center align-middle">
+                                                        <span className="inline-flex h-6 min-w-[1.5rem] items-center justify-center rounded-md bg-muted/60 font-mono text-[11px] font-medium text-muted-foreground">
+                                                          {idx + 1}
+                                                        </span>
+                                                      </TableCell>
+                                                      <TableCell className="px-3 py-2.5 text-sm font-medium">
+                                                        {it.item?.name ?? "—"}
+                                                      </TableCell>
+                                                      <TableCell className="px-3 py-2.5 text-sm text-muted-foreground">
+                                                        {it.item?.category?.name ?? "—"}
+                                                      </TableCell>
+                                                      <TableCell className="px-3 py-2.5 text-sm">
+                                                        <span className="inline-flex items-center gap-2">
+                                                          {it.item?.color?.color_code ? (
+                                                            <span
+                                                              className="h-2.5 w-2.5 shrink-0 rounded-full border border-border/80"
+                                                              style={{
+                                                                backgroundColor:
+                                                                  it.item.color.color_code,
+                                                              }}
+                                                              aria-hidden
+                                                            />
+                                                          ) : null}
+                                                          <span className="text-muted-foreground">
+                                                            {it.item?.color?.name ?? "—"}
+                                                          </span>
+                                                        </span>
+                                                      </TableCell>
+                                                      <TableCell className="px-3 py-2.5 text-right align-middle">
+                                                        <span className="inline-flex rounded-lg bg-violet-500/10 px-2.5 py-1 text-sm font-semibold tabular-nums text-violet-700 dark:text-violet-300">
+                                                          {qtyLabel(
+                                                            it.quantity,
+                                                            it.unit?.name ?? ""
+                                                          )}
+                                                        </span>
+                                                      </TableCell>
+                                                    </TableRow>
+                                                  ))}
+                                                </TableBody>
+                                              </Table>
+                                            </div>
+                                          ) : (
+                                            <p className="rounded-xl border border-dashed border-border/70 bg-background/40 px-4 py-8 text-center text-sm text-muted-foreground">
+                                              No items in this storage.
+                                            </p>
+                                          )}
                                         </div>
-                                      </TableCell>
-                                      <TableCell className="w-40 px-3 py-2 text-right align-middle tabular-nums text-sm">
-                                        {subQtyStr}
-                                      </TableCell>
-                                    </TableRow>
-                                  )
-                                })
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>,
+                                ]
                               : []),
                           ]
                         })

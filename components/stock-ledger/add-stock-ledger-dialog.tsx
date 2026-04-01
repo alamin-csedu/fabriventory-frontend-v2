@@ -12,6 +12,7 @@ import { StockLedgerCombobox } from "@/components/ui/stock-ledger-combobox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { apiService } from "@/lib/api"
+import { clampQuantity, formatQuantity } from "@/lib/utils"
 import { toast } from "sonner"
 import { Plus, Trash2, X } from "lucide-react"
 
@@ -237,7 +238,7 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
 
         const newItem: StockLedgerItem = {
           item_id: parseInt(itemFormData.item_id),
-          quantity: parseFloat(itemFormData.quantity),
+          quantity: clampQuantity(itemFormData.quantity, Number.POSITIVE_INFINITY, 2),
           unit_id: parseInt(itemFormData.unit_id),
           item: selectedItem,
           unit: selectedUnit,
@@ -279,11 +280,16 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
       // Create stock ledger items if it's a delivery and items have delivery quantities
       if (formData.type === "Delivery" && parentBookingItems.length > 0) {
         for (const item of parentBookingItems) {
-          if (item.delivery_quantity && item.delivery_quantity > 0) {
+          const max = Number(item.item_stats?.remaining ?? item.quantity ?? 0)
+          const q =
+            item.delivery_quantity != null
+              ? clampQuantity(item.delivery_quantity, max, 2)
+              : 0
+          if (q > 0) {
             await apiService.createStockLedgerItem({
               stock_ledger_id: createdStockLedgerId,
               item_id: item.item_id,
-              quantity: item.delivery_quantity,
+              quantity: q,
               unit_id: item.unit_id,
             })
           }
@@ -362,7 +368,7 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
 
     const newItem: StockLedgerItem = {
       item_id: parseInt(itemFormData.item_id),
-      quantity: parseFloat(itemFormData.quantity),
+      quantity: clampQuantity(itemFormData.quantity, Number.POSITIVE_INFINITY, 2),
       unit_id: parseInt(itemFormData.unit_id),
       item: selectedItem,
       unit: selectedUnit,
@@ -383,7 +389,7 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
 
       const newItem: StockLedgerItem = {
         item_id: parseInt(itemFormData.item_id),
-        quantity: parseFloat(itemFormData.quantity),
+        quantity: clampQuantity(itemFormData.quantity, Number.POSITIVE_INFINITY, 2),
         unit_id: parseInt(itemFormData.unit_id),
         item: selectedItem,
         unit: selectedUnit,
@@ -417,13 +423,23 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
     setItemFormData(updatedForm)
   }
 
-  const handleDeliveryQuantityChange = (itemId: number, quantity: number) => {
-    setParentBookingItems(prev => 
-      prev.map(item => 
-        item.item_id === itemId 
-          ? { ...item, delivery_quantity: quantity }
-          : item
-      )
+  const blockInvalidQtyKeys = (e: { key: string; preventDefault: () => void }) => {
+    if (e.key === "-" || e.key === "+" || e.key === "e" || e.key === "E") e.preventDefault()
+  }
+
+  const handleDeliveryQuantityChange = (itemId: number, raw: string) => {
+    setParentBookingItems((prev) =>
+      prev.map((item) => {
+        if (item.item_id !== itemId) return item
+        const max = Number(item.item_stats?.remaining ?? item.quantity ?? 0)
+        if (raw.trim() === "" || raw === "-") {
+          return { ...item, delivery_quantity: undefined }
+        }
+        const num = parseFloat(raw)
+        if (!Number.isFinite(num)) return item
+        const q = clampQuantity(num, max, 2)
+        return { ...item, delivery_quantity: q }
+      })
     )
   }
 
@@ -557,9 +573,9 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
                       {/* Existing items */}
                       {stockLedgerItems.map((item, index) => (
                         <TableRow key={index}>
-                          <TableCell>{item.item?.name || `Item #${item.item_id}`}</TableCell>
-                          <TableCell>{item.quantity}</TableCell>
-                          <TableCell>{item.unit?.name || `Unit #${item.unit_id}`}</TableCell>
+                          <TableCell>{item.item?.name || "—"}</TableCell>
+                          <TableCell>{formatQuantity(item.quantity)}</TableCell>
+                          <TableCell>{item.unit?.name || "—"}</TableCell>
                           <TableCell>
                             <Button
                               type="button"
@@ -598,8 +614,10 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
                             <Input
                               type="number"
                               step="0.01"
+                              min="0"
                               value={itemFormData.quantity}
                               onChange={(e) => handleItemInputChange("quantity", e.target.value)}
+                              onKeyDown={blockInvalidQtyKeys}
                               placeholder="0.00 *"
                               className="w-20"
                             />
@@ -700,23 +718,25 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
                         <TableRow key={item.id || index}>
                           <TableCell>
                             <div>
-                              <div className="font-medium">{item.item?.name || `Item #${item.item_id}`}</div>
-                              <div className="text-xs text-muted-foreground">{item.unit?.name || `Unit #${item.unit_id}`}</div>
+                              <div className="font-medium">{item.item?.name || "—"}</div>
+                              <div className="text-xs text-muted-foreground">{item.unit?.name || "—"}</div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="font-semibold text-blue-600">
-                              {item.quantity.toLocaleString()}
+                              {formatQuantity(item.quantity)}
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="font-semibold text-green-600">
-                              {item.item_stats?.delivered?.toLocaleString() || 0}
+                              {formatQuantity(item.item_stats?.delivered ?? 0)}
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="font-semibold text-orange-600">
-                              {item.item_stats?.remaining?.toLocaleString() || item.quantity.toLocaleString()}
+                              {formatQuantity(
+                                item.item_stats?.remaining ?? item.quantity ?? 0
+                              )}
                             </div>
                           </TableCell>
                           <TableCell>
@@ -724,9 +744,12 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
                               type="number"
                               step="0.01"
                               min="0"
-                              max={item.item_stats?.remaining || item.quantity}
-                              value={item.delivery_quantity || ""}
-                              onChange={(e) => handleDeliveryQuantityChange(item.item_id, parseFloat(e.target.value) || 0)}
+                              max={item.item_stats?.remaining ?? item.quantity}
+                              value={item.delivery_quantity != null ? item.delivery_quantity : ""}
+                              onChange={(e) =>
+                                handleDeliveryQuantityChange(item.item_id, e.target.value)
+                              }
+                              onKeyDown={blockInvalidQtyKeys}
                               placeholder="0.00"
                               className="w-20"
                             />
@@ -742,7 +765,7 @@ export function AddStockLedgerDialog({ open, onOpenChange, onSuccess, initialDat
                                   : "bg-gray-100 text-gray-800 border-gray-200"
                               }
                             >
-                              {item.item_stats?.percentage || 0}%
+                              {formatQuantity(item.item_stats?.percentage ?? 0)}%
                             </Badge>
                           </TableCell>
                         </TableRow>

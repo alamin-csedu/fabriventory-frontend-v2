@@ -38,7 +38,7 @@ export function EditJobDialog({ job, open, onOpenChange, onSubmit }) {
     e.preventDefault()
     
     if (!formData.name.trim() || !formData.customer_id.trim()) {
-      toast.error("Job name and customer ID are required")
+      toast.error("Job name and customer are required")
       return
     }
 
@@ -84,11 +84,12 @@ export function EditJobDialog({ job, open, onOpenChange, onSubmit }) {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="customer_id">Customer ID *</Label>
+              <Label htmlFor="customer_id">Customer *</Label>
               <Input
                 id="customer_id"
                 type="number"
-                placeholder="Enter customer ID"
+                min="1"
+                placeholder="Customer"
                 value={formData.customer_id}
                 onChange={(e) => setFormData(prev => ({ ...prev, customer_id: e.target.value }))}
                 required

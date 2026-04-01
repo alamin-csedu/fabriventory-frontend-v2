@@ -5,9 +5,9 @@ import { AddStorageDialog } from "@/components/storage/add-storage-dialog"
 import { EditStorageDialog } from "@/components/storage/edit-storage-dialog"
 import { DeleteStorageDialog } from "@/components/storage/delete-storage-dialog"
 import { ViewStorageDialog } from "@/components/storage/view-storage-dialog"
-import { StoragePageSkeleton, StorageTableSkeleton, StatsCardsSkeleton } from "@/components/storage/storage-page-skeleton"
+import { StoragePageSkeleton, StorageTableSkeleton } from "@/components/storage/storage-page-skeleton"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { 
   Pagination, 
@@ -17,8 +17,8 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination"
-import { Plus, Search, Warehouse, TrendingUp, Package } from "lucide-react"
-import { useState, useEffect } from "react"
+import { Plus, Search } from "lucide-react"
+import { useState, useEffect, useRef } from "react"
 import { apiService } from "@/lib/api"
 import { toast } from "sonner"
 
@@ -30,12 +30,8 @@ export default function StoragePage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [selectedStorage, setSelectedStorage] = useState(null)
   const [storages, setStorages] = useState([])
-  const [stats, setStats] = useState({
-    totalStorages: 0,
-    activeStorages: 0,
-    totalCapacity: 0
-  })
   const [loading, setLoading] = useState(true)
+  const initialLoadDone = useRef(false)
   const [tableLoading, setTableLoading] = useState(false)
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [isSearching, setIsSearching] = useState(false)
@@ -50,6 +46,9 @@ export default function StoragePage() {
   // Centralized API functions
   const fetchStorages = async () => {
     try {
+      if (!initialLoadDone.current) {
+        setLoading(true)
+      }
       const response = await apiService.getStorages({
         page: currentPage,
         size: perPage,
@@ -73,27 +72,10 @@ export default function StoragePage() {
     } finally {
       setTableLoading(false)
       setIsSearching(false)
-    }
-  }
-
-  const fetchStats = async () => {
-    try {
-      setLoading(true)
-      const response = await apiService.getStorages({ page: 1, size: 10 })
-      
-      if (response.data?.data) {
-        const storages = response.data.data
-        const totalCapacity = storages.reduce((sum, storage) => sum + (storage.capacity || 0), 0)
-        setStats({
-          totalStorages: storages.length,
-          activeStorages: storages.length, // All storages are considered active for now
-          totalCapacity: totalCapacity
-        })
+      if (!initialLoadDone.current) {
+        setLoading(false)
+        initialLoadDone.current = true
       }
-    } catch (error) {
-      console.error('Error fetching storage stats:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -103,7 +85,6 @@ export default function StoragePage() {
       toast.success("Storage created successfully")
       setIsAddDialogOpen(false)
       await fetchStorages()
-      await fetchStats()
     } catch (error) {
       console.error('Error creating storage:', error)
       toast.error("Failed to create storage. Please try again.")
@@ -118,7 +99,6 @@ export default function StoragePage() {
       setIsEditDialogOpen(false)
       setSelectedStorage(null)
       await fetchStorages()
-      await fetchStats()
     } catch (error) {
       console.error('Error updating storage:', error)
       toast.error("Failed to update storage. Please try again.")
@@ -133,7 +113,6 @@ export default function StoragePage() {
       setIsDeleteDialogOpen(false)
       setSelectedStorage(null)
       await fetchStorages()
-      await fetchStats()
     } catch (error) {
       console.error('Error deleting storage:', error)
       toast.error("Failed to delete storage. Please try again.")
@@ -159,12 +138,7 @@ export default function StoragePage() {
     fetchStorages()
   }, [debouncedSearchTerm, currentPage, perPage, sorting.sortBy, sorting.sortOrder])
 
-  useEffect(() => {
-    fetchStats()
-  }, [])
-
   const handleRefresh = () => {
-    fetchStats()
     fetchStorages()
   }
 
@@ -208,58 +182,6 @@ export default function StoragePage() {
           Add Storage
         </Button>
       </div>
-
-      {/* Stats Cards */}
-      {loading ? (
-        <StatsCardsSkeleton />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Storages</CardTitle>
-              <Warehouse className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalStorages}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Active</span> locations
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Storages</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.activeStorages}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Currently</span> active
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Capacity</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalCapacity.toFixed(2)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                <span className="text-primary">Units</span> available
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Search and Filters */}
       <Card>

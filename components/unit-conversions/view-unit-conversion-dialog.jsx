@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Calendar, User, Globe, ArrowRight } from "lucide-react"
+import { Calendar, Globe, ArrowRight } from "lucide-react"
 
 export const ViewUnitConversionDialog = ({ open, onOpenChange, conversion }) => {
   const formatDate = (dateString) => {
@@ -51,14 +51,14 @@ export const ViewUnitConversionDialog = ({ open, onOpenChange, conversion }) => 
             <div className="space-y-3">
               <div className="flex items-center justify-between py-2 border-b">
                 <span className="text-sm font-medium text-muted-foreground">From Unit</span>
-                <span className="text-sm font-medium">{conversion?.from_unit?.name || `Unit ${conversion?.from_id}`}</span>
+                <span className="text-sm font-medium">{conversion?.from_unit?.name || "—"}</span>
               </div>
               <div className="flex items-center justify-center py-2">
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="flex items-center justify-between py-2 border-b">
                 <span className="text-sm font-medium text-muted-foreground">To Unit</span>
-                <span className="text-sm font-medium">{conversion?.to_unit?.name || `Unit ${conversion?.to_id}`}</span>
+                <span className="text-sm font-medium">{conversion?.to_unit?.name || "—"}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b">
                 <span className="text-sm font-medium text-muted-foreground">Operation</span>
@@ -84,18 +84,6 @@ export const ViewUnitConversionDialog = ({ open, onOpenChange, conversion }) => 
                 <span className="text-sm font-medium text-muted-foreground">Created:</span>
                 <span className="text-sm">{formatDate(conversion?.created_at)}</span>
               </div>
-              <div className="flex items-center gap-2 py-2 border-b">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-muted-foreground">Last Updated:</span>
-                <span className="text-sm">{formatDate(conversion?.updated_at)}</span>
-              </div>
-              {conversion?.created_by && (
-                <div className="flex items-center gap-2 py-2 border-b">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Created By:</span>
-                  <span className="text-sm">User ID {conversion.created_by}</span>
-                </div>
-              )}
               {conversion?.created_ip && (
                 <div className="flex items-center gap-2 py-2 border-b">
                   <Globe className="h-4 w-4 text-muted-foreground" />

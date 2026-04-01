@@ -1,7 +1,7 @@
 "use client"
 
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -62,8 +62,9 @@ export function DashboardLayout({ children }) {
   const { user, logout, hasAnyRole, roles } = useAuth()
 
   // Filter navigation based on user roles
-  const filteredNavigation = navigation.filter(item => 
-    item.roles && hasAnyRole(item.roles)
+  const filteredNavigation = useMemo(
+    () => navigation.filter((item) => item.roles && hasAnyRole(item.roles)),
+    [hasAnyRole]
   )
 
   // Prefetch navigation routes for better performance
@@ -72,7 +73,6 @@ export function DashboardLayout({ children }) {
       if (item.href) {
         router.prefetch(item.href)
       }
-      // Prefetch submenu routes
       if (item.submenu) {
         item.submenu.forEach((subItem) => {
           if (subItem.href) {
@@ -115,7 +115,7 @@ export function DashboardLayout({ children }) {
         }
       })
     }
-  }, [pathname]) // Remove filteredNavigation from dependencies
+  }, [pathname, filteredNavigation])
 
   const handleLogout = async () => {
     await logout()
@@ -173,8 +173,10 @@ export function DashboardLayout({ children }) {
               <Button
                 variant="ghost"
                 className={cn(
-                  "w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent",
-                  isActive && "bg-sidebar-primary text-sidebar-primary-foreground"
+                  "w-full justify-start gap-3 text-sidebar-foreground",
+                  isActive
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-none hover:!bg-sidebar-primary/90 hover:!text-sidebar-primary-foreground"
+                    : "hover:!bg-sidebar-accent hover:!text-sidebar-foreground"
                 )}
                 onClick={() => {
                   if (hasSubmenu) {
@@ -222,8 +224,10 @@ export function DashboardLayout({ children }) {
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "w-full justify-start gap-3 text-sidebar-foreground/80 hover:bg-sidebar-accent text-sm",
-                          isSubActive && "bg-sidebar-primary/20 text-sidebar-primary"
+                          "w-full justify-start gap-3 text-sidebar-foreground/80 text-sm",
+                          isSubActive
+                            ? "bg-sidebar-primary/20 text-sidebar-primary hover:!bg-sidebar-primary/30 hover:!text-sidebar-primary"
+                            : "hover:!bg-sidebar-accent hover:!text-sidebar-foreground"
                         )}
                         onClick={() => {
                           if (mobile) setSidebarOpen(false)
@@ -290,20 +294,13 @@ export function DashboardLayout({ children }) {
         <Sidebar />
       </div>
 
-      {/* Mobile Sidebar */}
-      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="w-64 p-0">
-          <Sidebar mobile />
-        </SheetContent>
-      </Sheet>
-
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
         <header className="flex h-14 sm:h-16 items-center gap-2 sm:gap-4 border-b px-3 sm:px-6">
-          <Sheet>
+          <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="lg:hidden bg-transparent shrink-0">
+              <Button variant="outline" size="icon" className="lg:hidden bg-transparent shrink-0" aria-label="Open menu">
                 <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>

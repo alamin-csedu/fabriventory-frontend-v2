@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Mail, Phone, MapPin, User, Hash } from "lucide-react"
+import { Calendar, Mail, Phone, MapPin, User } from "lucide-react"
 
 export function ViewCustomerDialog({ customer, open, onOpenChange }) {
   const formatDate = (dateString) => {
@@ -84,30 +84,12 @@ export function ViewCustomerDialog({ customer, open, onOpenChange }) {
             <h3 className="text-lg font-semibold">System Information</h3>
             <div className="grid gap-4">
               <div className="flex items-center gap-3">
-                <Hash className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Customer ID</p>
-                  <p className="text-sm text-muted-foreground">#{customer.id}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Created</p>
                   <p className="text-sm text-muted-foreground">{formatDate(customer.created_at)}</p>
                 </div>
               </div>
-              
-              {customer.updated_at && customer.updated_at !== customer.created_at && (
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Last Updated</p>
-                    <p className="text-sm text-muted-foreground">{formatDate(customer.updated_at)}</p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 
